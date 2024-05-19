@@ -8,6 +8,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import product_catalog.ProductListDetailsPreview
+import product_catalog.ProductListPreview
 import ui.LoginFactory
 import ui.LoginRoute
 
@@ -26,13 +28,13 @@ fun main() {
             onCloseRequest = ::exitApplication
         ) {
             MaterialTheme {
-                val loginController = remember { LoginFactory.createLoginFormController() }
-                LoginRoute(
-                    controller = loginController,
-                    onEvent = {
-                        println(it)
-                    }
-                )
+//                val loginController = remember { LoginFactory.createLoginFormController() }
+//                LoginRoute(
+//                    controller = loginController,
+//                    onEvent = {
+//                        println(it)
+//                    }
+//                )
 //                val registerController = remember { RegisterFactory.createController() }
 //                RegisterRoute(
 //                    controller = registerController,
@@ -40,6 +42,9 @@ fun main() {
 //                        println(it)
 //                    }
 //                )
+
+              //  ProductListPreview()
+                ProductListDetailsPreview()
             }
         }
     }
