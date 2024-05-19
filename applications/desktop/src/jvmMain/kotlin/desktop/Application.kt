@@ -8,6 +8,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import product_catalog.CartListPreview
 import product_catalog.ProductListDetailsPreview
 import product_catalog.ProductListPreview
 import ui.LoginFactory
@@ -44,7 +45,8 @@ fun main() {
 //                )
 
               //  ProductListPreview()
-                ProductListDetailsPreview()
+              //  ProductListDetailsPreview()
+                CartListPreview()
             }
         }
     }
