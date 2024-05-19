@@ -42,6 +42,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
+import java.util.UUID
 
 /**
  * Product and product details in the same file because they share common component that can be re-use
@@ -52,28 +53,22 @@ import coil3.request.ImageRequest
 /*
 TODO: Product Details Section
  */
+@Composable
+fun ProductListRoute(
+    products: List<Product>,
+    onClick: (id: String) -> Unit
+) {
+
+
+    ProductList(products, onClick = onClick)
+
+}
 
 @Composable
-fun ProductListDetailsPreview() {
-    val product = Product(
-        name = "Nokia 8000",
-        images = listOf("https://welectronics.com/images/stories/virtuemart/product/Nokia8000gold6.jpg"),
-        price = 8999, // Assuming the price is in BDT
-        specifications = """
-        - Display: 6.51-inch HD+ display
-        - Processor: Unison T606
-        - RAM: 3GB
-        - Storage: 64GB, expandable via microSD
-        - Camera: 13MP + 2MP dual rear cameras, 8MP front camera
-        - Battery: 4500mAh
-        - OS: Android 11 (Go Edition)
-    """.trimIndent(),
-        description = "The Nokia 8000 is a sleek and budget-friendly smartphone designed for everyday use. It offers a large HD+ display, a dual-camera setup, and a long-lasting battery, making it an ideal choice for those looking for a reliable device at an affordable price.",
-        type = "Electronics",
-        amountAvailable = 5
-    )
-
-    Column (Modifier.verticalScroll(rememberScrollState())){
+fun ProductListDetailsRoute(
+    product: Product,
+) {
+    Column(Modifier.verticalScroll(rememberScrollState())) {
         ProductDetails(product)
         ReviewSectionPreview()
     }
@@ -91,10 +86,10 @@ private fun ProductDetails(product: Product) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val windowWidth= calculateWindowSizeClass().widthSizeClass
-        val weight=0.35f
-        when(windowWidth){
-            WindowWidthSizeClass.Compact->{
+        val windowWidth = calculateWindowSizeClass().widthSizeClass
+        val weight = 0.35f
+        when (windowWidth) {
+            WindowWidthSizeClass.Compact -> {
                 Column {
                     _ProductImage(
                         modifier = Modifier.sizeIn(maxWidth = 100.dp),
@@ -107,7 +102,8 @@ private fun ProductDetails(product: Product) {
                     )
                 }
             }
-            else->{
+
+            else -> {
                 Row {
                     //Since product so should use hd quality image so that user can ....
                     _ProductImage(
@@ -118,7 +114,7 @@ private fun ProductDetails(product: Product) {
                         urls = product.images
                     )
                     _ProductDetailsSection(
-                        modifier = Modifier.weight(1f-weight),
+                        modifier = Modifier.weight(1f - weight),
                         name = product.name,
                         price = product.price.toString(),
                         description = product.description
@@ -128,18 +124,17 @@ private fun ProductDetails(product: Product) {
         }
 
 
-
     }
 }
 
 @Composable
 private fun _ProductDetailsSection(
-    modifier: Modifier=Modifier,
+    modifier: Modifier = Modifier,
     name: String,
     price: String,
     description: String,
 ) {
-    Column (modifier){
+    Column(modifier) {
         _ProductTitle(
             modifier = Modifier.padding(start = 8.dp, end = 8.dp),
             title = name
@@ -161,7 +156,7 @@ private fun _ProductDetailsSection(
 
 @Composable
 private fun _ProductDescription(
-    modifier: Modifier=Modifier,
+    modifier: Modifier = Modifier,
     description: String
 ) {
     Text(
@@ -172,12 +167,8 @@ private fun _ProductDescription(
 }
 
 
-
-
-
-
 @Composable
-fun ProductList(products: List<Product>) {
+fun ProductList(products: List<Product>, onClick: (id: String) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
         contentPadding = PaddingValues(16.dp),
@@ -185,7 +176,9 @@ fun ProductList(products: List<Product>) {
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(products) { product ->
-            ProductItem(product)
+            ProductItem(product) {
+                onClick(product.id)
+            }
         }
     }
 }
@@ -288,7 +281,7 @@ fun ReviewSection(reviews: List<Review>) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-      reviews.forEach{ review ->
+        reviews.forEach { review ->
             ReviewItem(review)
         }
     }
@@ -306,7 +299,10 @@ fun ReviewSectionPreview() {
         Review(
             userName = "Jane Smith",
             comment = "Not bad, but could be better.",
-            imageLinks = listOf("https://via.placeholder.com/150", "https://via.placeholder.com/150")
+            imageLinks = listOf(
+                "https://via.placeholder.com/150",
+                "https://via.placeholder.com/150"
+            )
         ),
         Review(
             userName = "Alice Johnson",
@@ -319,33 +315,13 @@ fun ReviewSectionPreview() {
 }
 
 
-
-
-
 @Composable
-fun ProductListPreview() {
-    val product=Product(
-        name = "Nokia 8000",
-        images = listOf("https://welectronics.com/images/stories/virtuemart/product/Nokia8000gold6.jpg"),
-        price =5205,
-        specifications = "Sample specifications",
-        description = "Sample description",
-        type = "Electronics",
-        amountAvailable = 5
-    )
-
-    ProductList(List(10){product})
-
-}
-
-
-@Composable
-fun ProductItem(product: Product) {
+fun ProductItem(product: Product, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
-            .clickable { /* Handle click */ },
+            .clickable { onClick() },
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -364,11 +340,12 @@ fun ProductItem(product: Product) {
 
     }
 }
+
 data class Product(
+    val id: String = UUID.randomUUID().toString(),
     val name: String,
     val images: List<String>,
     val price: Int,
-    val specifications: String,
     val description: String,
     val type: String,
     val amountAvailable: Int
@@ -422,7 +399,6 @@ private fun _ProductPrice(
         modifier = modifier
     )
 }
-
 
 
 /**

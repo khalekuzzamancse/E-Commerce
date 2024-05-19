@@ -38,6 +38,8 @@ kotlin {
                 implementation(libs.coil3)
                 implementation(libs.coil3.core)
                 implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(project(":core:database"))
+                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha03")
             }
         }
         val androidMain by getting{
