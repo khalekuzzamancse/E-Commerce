@@ -1,5 +1,7 @@
 package database
 
+import CartItemSchema
+import UserSchema
 import database.schema.ProductSchema
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
@@ -17,6 +19,8 @@ internal object DB {
     private val configuration = RealmConfiguration.create(
         schema = setOf(
             ProductSchema::class,
+            UserSchema::class,
+            CartItemSchema::class
         )
     )
     internal val db= Realm.open(configuration)
