@@ -1,15 +1,17 @@
 package network
 
 import kotlinx.coroutines.runBlocking
-import netwok.APIs
+import netwok.APIFacade
 import netwok.CartEntity
+import netwok.OrderRequest
+import netwok.OrderedItem
 import kotlin.test.Test
 
-class APIsTest {
+class APIFacadeTest {
     @Test
     fun testProducts() {
         runBlocking {
-            val result = APIs().fetchProducts()
+            val result = APIFacade().fetchProducts()
             println(result)
         }
     }
@@ -17,7 +19,7 @@ class APIsTest {
     @Test
     fun testCarts() {
         runBlocking {
-            val result = APIs().fetchCarts("admin")
+            val result = APIFacade().fetchCarts("admin")
             println(result)
         }
     }
@@ -25,7 +27,7 @@ class APIsTest {
     @Test
     fun testCoupon() {
         runBlocking {
-            val result = APIs().fetchCoupon("admin")
+            val result = APIFacade().fetchCoupon("admin")
             println(result.getOrNull())
         }
     }
@@ -33,7 +35,7 @@ class APIsTest {
     @Test
     fun addToCart() {
         runBlocking {
-            val result = APIs().addToCart(
+            val result = APIFacade().addToCart(
                 CartEntity(
                     userId = "admin",
                     productId = "prod456",
@@ -47,7 +49,7 @@ class APIsTest {
     @Test
     fun updateCart() {
         runBlocking {
-            val result = APIs().updateCarts(
+            val result = APIFacade().updateCarts(
                 listOf(
                     CartEntity(
                         userId = "admin",
@@ -61,6 +63,26 @@ class APIsTest {
                     )
                 )
             )
+            println(result.getOrNull())
+        }
+    }
+    @Test
+    fun orderRequestTest() {
+
+        runBlocking {
+            val orderedItems = listOf(
+                OrderedItem(productId = "1", quantity = 2),
+                OrderedItem(productId = "2", quantity = 1),
+                OrderedItem(productId = "3", quantity = 3)
+            )
+
+            // Creating an OrderRequest instance using the list of ordered items
+            val orderRequest = OrderRequest(
+                userId = "admin",
+                coupon = "6272",  // This can be null if no coupon is applied
+                items = orderedItems
+            )
+            val result = APIFacade().orderRequest(orderRequest)
             println(result.getOrNull())
         }
     }

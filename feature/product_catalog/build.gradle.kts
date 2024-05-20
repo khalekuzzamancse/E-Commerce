@@ -39,6 +39,7 @@ kotlin {
                 implementation(libs.coil3.core)
                 implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(project(":core:database"))
+                implementation(project(":core:network"))
                 implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha03")
             }
         }

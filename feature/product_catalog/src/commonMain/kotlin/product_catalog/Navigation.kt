@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import database.api.ProductListAPIs
+import netwok.APIFacade
 
 enum class Route {
     ProductList, ProductDetails, Cart
@@ -41,24 +42,21 @@ fun NavGraph() {
         composable(route = Route.ProductList.name) {
             var products by remember { mutableStateOf<List<Product>>(emptyList()) }
             LaunchedEffect(Unit) {
-                ProductListAPIs().getAllProductsFlow().collect { list ->
-                    products = list.map {
-                        Product(
-                            id = it.id,
-                            name = it.name,
-                            images = it.images,
-                            price = it.price,
-                            description = it.description,
-                            type = it.type,
-                            amountAvailable = it.amountAvailable
-                        )
-                    }
-
+                products = APIFacade().fetchProducts().getOrDefault(emptyList()).map {
+                    Product(
+                        id = it.id,
+                        name = it.name,
+                        images = it.images,
+                        price = it.price,
+                        description = it.description,
+                        type = it.type,
+                        amountAvailable = it.amountAvailable
+                    )
                 }
             }
             ProductListRoute(
                 products = products,
-                onClick = {id->
+                onClick = { id ->
                     navController.navigate("ProductDetails/$id")
                 }
             )
@@ -71,8 +69,8 @@ fun NavGraph() {
             var product by remember { mutableStateOf<Product?>(null) }
             LaunchedEffect(Unit) {
                 if (id != null) {
-                    ProductListAPIs().getProductById(id)?.let {
-                        product =   Product(
+                    APIFacade().fetchProduct(id).getOrNull()?.let {
+                        product = Product(
                             id = it.id,
                             name = it.name,
                             images = it.images,
