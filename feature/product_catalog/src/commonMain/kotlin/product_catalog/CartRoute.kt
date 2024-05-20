@@ -29,7 +29,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,26 +46,35 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.random.Random
+import netwok.APIFacade
+import netwok.OrderedItem
 
 @Composable
 fun CartRoute(
-    onConfirmOrder: (NewOrder) -> Unit={}
+    onConfirmOrder: (NewOrder) -> Unit = {}
 ) {
-    val sampleCartItems = CartItem(
-        productId = "1",
-        productName = "Sample Product 1",
-        productImageUrl = "https://d61s2hjse0ytn.cloudfront.net/color/410/nokia_130_black.webp",
-        unitPrice = 29.99,
-        quantity = 2
-    )
-    val controller = CartController(List(size = 10) {
-        sampleCartItems.copy(productName = "Name:$it", productId = it.toString())
-    })
+    var controller by remember { mutableStateOf(CartController(emptyList())) }
+    LaunchedEffect(Unit) {
+
+        val items = APIFacade().fetchCarts().getOrDefault(emptyList()).map { cartItem ->
+            val product = cartItem.product
+            CartItem(
+                productId = product.id,
+                productName = product.name,
+                productImageUrl = product.images.first(),
+                unitPrice = product.price,
+                quantity = cartItem.quantity
+            )
+        }
+        controller = CartController(items)
+
+    }
+
     Scaffold(
         floatingActionButton = {
             Button(onClick = controller::showConfirmationDialogue) {
@@ -73,7 +87,7 @@ fun CartRoute(
             onQuantityChange = controller::onQuantityChanged,
             onRemoveRequest = controller::onItemRemoveRequest
         )
-        if (controller.showConfirmationDialog.collectAsState().value){
+        if (controller.showConfirmationDialog.collectAsState().value) {
             _OrderConfirmationDialog(
                 totalValue = "${controller.totalPrice.collectAsState().value}",
                 discountAmount = "${controller.discount.collectAsState().value}",
@@ -100,16 +114,16 @@ fun CartRoute(
 
 data class NewOrder(
     val items: List<CartItem>,
-    val discount:Int
+    val discount: Int
 )
 
 @Composable
 private fun _OrderConfirmationDialog(
     totalValue: String,
-    discountAmount:String,
-    message:String?,
+    discountAmount: String,
+    message: String?,
     couponCode: String,
-    onCouponCodeChanged:(String)->Unit,
+    onCouponCodeChanged: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onConfirmOrder: () -> Unit
 ) {
@@ -131,7 +145,7 @@ private fun _OrderConfirmationDialog(
                     label = { Text("Coupon Code") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (message!=null){
+                if (message != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = message)
 
@@ -155,23 +169,23 @@ private fun _OrderConfirmationDialog(
         }
     )
 }
+
 class CartController(
-    items: List<CartItem>
+    items: List<CartItem>,
 ) {
     private val _items = MutableStateFlow(items)
     val items = _items.asStateFlow()
-    private val _showConfirmationDialog=MutableStateFlow(false)
-    val showConfirmationDialog=_showConfirmationDialog.asStateFlow()
-    private val _totalPrice=MutableStateFlow(0)
-    private val _discount=MutableStateFlow(0)
-    private val _messageAboutCouponCode=MutableStateFlow<String?>(null)
-    val messageAboutCouponCode=_messageAboutCouponCode.asStateFlow()
-    private val _couponCode=MutableStateFlow("")
-    val couponCode=_couponCode.asStateFlow()
-    val totalPrice=_totalPrice.asStateFlow()
-    val discount=_discount.asStateFlow()
-    private var isAlreadyGotDiscount=false
-
+    private val _showConfirmationDialog = MutableStateFlow(false)
+    val showConfirmationDialog = _showConfirmationDialog.asStateFlow()
+    private val _totalPrice = MutableStateFlow(0)
+    private val _discount = MutableStateFlow(0)
+    private val _messageAboutCouponCode = MutableStateFlow<String?>(null)
+    val messageAboutCouponCode = _messageAboutCouponCode.asStateFlow()
+    private val _couponCode = MutableStateFlow("")
+    val couponCode = _couponCode.asStateFlow()
+    val totalPrice = _totalPrice.asStateFlow()
+    val discount = _discount.asStateFlow()
+    private var isAlreadyGotDiscount = false
 
 
     fun onItemRemoveRequest(id: String) {
@@ -192,39 +206,56 @@ class CartController(
     }
 
     //dialog section
-    fun showConfirmationDialogue(){
-        _totalPrice.update { items.value.sumOf { it.totalPrice }.toInt() }
-        _showConfirmationDialog.update { true }
-        _messageAboutCouponCode.update {
-            if (totalPrice.value<5000)
-                "You have a Coupon code : ${generateCouponCode()} , use it next time for discount"
-            else
-                null
-        }
-    }
-init {
-    CoroutineScope(Dispatchers.Default).launch {
-        couponCode.collect{code->
-            if (code.length==4&&!isAlreadyGotDiscount){
-                _totalPrice.update {
-                    it-calculateDiscount()
-                }
-                _discount.update { calculateDiscount() }
-                isAlreadyGotDiscount=true
+    fun showConfirmationDialogue() {
+        CoroutineScope(Dispatchers.Default).launch {
+            val previousCoupon = APIFacade().fetchCoupon().getOrNull()
+            _totalPrice.update { items.value.sumOf { it.totalPrice }.toInt() }
+            _showConfirmationDialog.update { true }
+            _messageAboutCouponCode.update {
+                if (previousCoupon != null)
+                    "You have a previous coupon:$previousCoupon"
+                else
+                    null
             }
         }
+
     }
-}
-    private fun calculateDiscount()=200
-    fun onOrderConfirm(){
-        _showConfirmationDialog.update { false }
+
+    fun onOrderConfirm() {
+        CoroutineScope(Dispatchers.Default).launch {
+            val response = APIFacade().orderRequest(
+                coupon = couponCode.value,
+                items = items.value.map {
+                    OrderedItem(it.productId, it.quantity)
+                }
+            ).getOrNull()
+            if (response!=null){
+                _totalPrice.update { response.totalPrice-response.discount}
+                _discount.update { response.discount }
+                _showConfirmationDialog.update { true }
+                _messageAboutCouponCode.update {
+                    if (response .coupon!= null)
+                        "Congratulations,You have new Coupon:${response.coupon}"
+                    else
+                        null
+            }
+
+            }
+            delay(3_000)//after 3 sec hide dialogue,to avoid multiple click
+            _showConfirmationDialog.update { false }
+            //remove the item from cart
+         val isRemoved= APIFacade().clearCart()
+            println("IsItemRemovecart:$isRemoved")
+            //fetch the new cart
+            //but right now let remove the local cart
+            _items.update { emptyList() }
+
+        }
+
+
     }
-    private fun generateCouponCode(): String {
-        val random = Random(System.currentTimeMillis())
-        val couponCode = (1000..9999).random(random)
-        return couponCode.toString()
-    }
-    fun onCouponCodeChanged(code:String){
+
+    fun onCouponCodeChanged(code: String) {
         _couponCode.update { code }
     }
 
@@ -317,10 +348,10 @@ data class CartItem(
     val productId: String,
     val productName: String,
     val productImageUrl: String,
-    val unitPrice: Double,
+    val unitPrice: Int,
     var quantity: Int
 ) {
-    val totalPrice: Double
+    val totalPrice: Int
         get() = unitPrice * quantity
 }
 
@@ -384,7 +415,7 @@ private fun _CartControlSection(
             Text(text = "$quantity", fontSize = 18.sp)
             IconButton(
                 onClick = {
-                        onItemAmountChanged(true)
+                    onItemAmountChanged(true)
                 },
                 enabled = quantity < availableItems
             ) {

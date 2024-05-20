@@ -19,7 +19,7 @@ class APIFacadeTest {
     @Test
     fun testCarts() {
         runBlocking {
-            val result = APIFacade().fetchCarts("admin")
+            val result = APIFacade().fetchCarts()
             println(result)
         }
     }

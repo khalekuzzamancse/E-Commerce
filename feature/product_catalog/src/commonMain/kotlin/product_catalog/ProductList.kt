@@ -67,9 +67,10 @@ fun ProductListRoute(
 @Composable
 fun ProductListDetailsRoute(
     product: Product,
+    onAddToCart:(Int)->Unit,
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        ProductDetails(product)
+        ProductDetails(product,onAddToCart)
         ReviewSectionPreview()
     }
 
@@ -78,7 +79,10 @@ fun ProductListDetailsRoute(
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-private fun ProductDetails(product: Product) {
+private fun ProductDetails(
+    product: Product,
+    onAddToCart: (Int) -> Unit,
+) {
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -98,7 +102,8 @@ private fun ProductDetails(product: Product) {
                     _ProductDetailsSection(
                         name = product.name,
                         price = product.price.toString(),
-                        description = product.description
+                        description = product.description,
+                        onAddToCart = onAddToCart
                     )
                 }
             }
@@ -117,7 +122,8 @@ private fun ProductDetails(product: Product) {
                         modifier = Modifier.weight(1f - weight),
                         name = product.name,
                         price = product.price.toString(),
-                        description = product.description
+                        description = product.description,
+                        onAddToCart =onAddToCart
                     )
                 }
             }
@@ -133,6 +139,7 @@ private fun _ProductDetailsSection(
     name: String,
     price: String,
     description: String,
+    onAddToCart: (Int) -> Unit,
 ) {
     Column(modifier) {
         _ProductTitle(
@@ -149,7 +156,7 @@ private fun _ProductDetailsSection(
         )
         _CartControlSection(
             availableItems = 5,
-            onAddToCart = {}
+            onAddToCart = onAddToCart
         )
     }
 }
