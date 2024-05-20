@@ -22,9 +22,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -36,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -54,7 +57,7 @@ import java.util.UUID
 TODO: Product Details Section
  */
 @Composable
-fun ProductListRoute(
+internal fun ProductListRoute(
     products: List<Product>,
     onClick: (id: String) -> Unit
 ) {
@@ -178,9 +181,9 @@ private fun _ProductDescription(
 fun ProductList(products: List<Product>, onClick: (id: String) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        contentPadding = PaddingValues(4.dp), //Daraz and amazon uses less gap
+        verticalArrangement = Arrangement.spacedBy(8.dp), //Daraz and amazon uses less gap
+        horizontalArrangement = Arrangement.spacedBy(8.dp)//Daraz and amazon uses less gap
     ) {
         items(products) { product ->
             ProductItem(product) {
@@ -221,7 +224,8 @@ private fun _CartControlSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Remove,
-                    contentDescription = "Decrease quantity"
+                    contentDescription = "Decrease quantity",
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
             Text(text = "$quantity", fontSize = 18.sp)
@@ -235,13 +239,15 @@ private fun _CartControlSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Increase quantity"
+                    contentDescription = "Increase quantity",
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
         }
         Button(
             onClick = { onAddToCart(quantity) },
-            modifier = Modifier.sizeIn(maxWidth = 150.dp)
+            modifier = Modifier.sizeIn(maxWidth = 150.dp),
+            colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
             Text(text = "Add to Cart", fontSize = 18.sp)
         }
@@ -324,28 +330,35 @@ fun ReviewSectionPreview() {
 
 @Composable
 fun ProductItem(product: Product, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth()
-            .clickable { onClick() },
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = Modifier .padding(2.dp),
+        shape = RoundedCornerShape(4.dp),
+        shadowElevation = 1.dp, //Daraz and Amazon app uses less elevation
     ) {
-        _ProductImage(
-            modifier = Modifier.size(100.dp),
-            urls = product.images
-        )
-        _ProductTitle(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-            title = product.name
-        )
-        _ProductPrice(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-            price = "${product.price} Tk"
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)//Daraz use white background,even it work in dark mode
+                .clickable { onClick() },
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            _ProductImage(
+                modifier = Modifier.size(100.dp),
+                urls = product.images
+            )
+            _ProductTitle(
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                title = product.name
+            )
+            _ProductPrice(
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                price = "${product.price} Tk"
+            )
 
+        }
     }
+
 }
 
 data class Product(

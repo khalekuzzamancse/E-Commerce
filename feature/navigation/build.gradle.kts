@@ -17,8 +17,19 @@ kotlin {
     sourceSets{
         val commonMain by getting{
             dependencies {
-
-
+                implementation(compose.ui)
+                implementation(compose.material3)
+                implementation(compose.animation)
+                implementation(compose.animationGraphics)
+                implementation(compose.materialIconsExtended)
+                implementation(compose.foundation)
+                implementation(compose.runtime)
+                implementation(libs.windowSize)
+//                implementation(compose.components.resources)
+                //view-model
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(project(":feature:product_catalog"))
+                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha03")
             }
         }
         val androidMain by getting{
@@ -33,13 +44,7 @@ kotlin {
             }
         }
     }
-    //to use expect and actual keywords
-    kotlin {
-        compilerOptions {
-            // Common compiler options applied to all Kotlin source sets
-            freeCompilerArgs.add("-Xmulti-platform")
-        }
-    }
+
 
 
 }

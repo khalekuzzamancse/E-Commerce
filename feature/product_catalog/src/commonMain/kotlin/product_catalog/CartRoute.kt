@@ -22,10 +22,13 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -55,7 +58,7 @@ import netwok.APIFacade
 import netwok.OrderedItem
 
 @Composable
-fun CartRoute(
+internal fun CartRoute(
     onConfirmOrder: (NewOrder) -> Unit = {}
 ) {
     var controller by remember { mutableStateOf(CartController(emptyList())) }
@@ -77,10 +80,14 @@ fun CartRoute(
 
     Scaffold(
         floatingActionButton = {
-            Button(onClick = controller::showConfirmationDialogue) {
+            Button(
+                onClick = controller::showConfirmationDialogue,
+                colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.secondary)
+            ) {
                 Text("Order Now")
             }
-        }
+        },
+        floatingActionButtonPosition = FabPosition.EndOverlay
     ) {
         CartList(
             cartItems = controller.items.collectAsState().value,
@@ -157,13 +164,15 @@ private fun _OrderConfirmationDialog(
                 onClick = {
                     onConfirmOrder()
                     onDismissRequest()
-                }
+                },
+                colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.secondary)
             ) {
                 Text("Confirm")
             }
         },
         dismissButton = {
-            Button(onClick = onDismissRequest) {
+            Button(onClick = onDismissRequest,
+                colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.error)) {
                 Text("Cancel")
             }
         }
@@ -292,56 +301,64 @@ fun CartItemView(
     onQuantityChange: (String, increased: Boolean) -> Unit,
     onRemoveRequest: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(8.dp)
+    Surface(
+        modifier = Modifier .padding(2.dp),
+        shape = RoundedCornerShape(4.dp),
+        shadowElevation = 1.dp, //Daraz and Amazon app uses less elevation
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
         ) {
-            _ProductImage(
-                modifier = Modifier.size(80.dp),
-                url = cartItem.productImageUrl
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(Modifier) {
-                Text(
-                    text = cartItem.productName,
-                    style = MaterialTheme.typography.titleMedium,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "Price: \$${cartItem.unitPrice}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Total: \$${cartItem.totalPrice}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            _CartControlSection(
-                availableItems = 5,
-                addedItemAmount = cartItem.quantity,
-                onItemAmountChanged = { newQuantity ->
-                    onQuantityChange(cartItem.productId, newQuantity)
-                }
-            )
-            IconButton(
-                onClick = onRemoveRequest
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Delete, contentDescription = "Remove from cart")
+                _ProductImage(
+                    modifier = Modifier.size(80.dp),
+                    url = cartItem.productImageUrl
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(Modifier) {
+                    Text(
+                        text = cartItem.productName,
+                        style = MaterialTheme.typography.titleMedium,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "Price: \$${cartItem.unitPrice}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Total: \$${cartItem.totalPrice}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                _CartControlSection(
+                    availableItems = 5,
+                    addedItemAmount = cartItem.quantity,
+                    onItemAmountChanged = { newQuantity ->
+                        onQuantityChange(cartItem.productId, newQuantity)
+                    }
+                )
+                IconButton(
+                    onClick = onRemoveRequest
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Remove from cart",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
 
+            }
         }
     }
-
 }
 
 data class CartItem(
@@ -409,7 +426,8 @@ private fun _CartControlSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Remove,
-                    contentDescription = "Decrease quantity"
+                    contentDescription = "Decrease quantity",
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
             Text(text = "$quantity", fontSize = 18.sp)
@@ -421,7 +439,8 @@ private fun _CartControlSection(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Increase quantity"
+                    contentDescription = "Increase quantity",
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
         }
