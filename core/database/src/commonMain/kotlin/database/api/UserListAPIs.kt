@@ -7,6 +7,7 @@ import UserSchema
 import database.DB
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query
+import io.realm.kotlin.ext.toRealmList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -17,7 +18,7 @@ class UserListAPIs {
     suspend fun addUser(userEntity: UserEntity) {
         try {
             withContext(Dispatchers.IO) {
-                realm.write {
+                realm.writeBlocking  {
                     val user = UserSchema().apply {
                         email = userEntity.email
                         name = userEntity.name
@@ -50,78 +51,28 @@ class UserListAPIs {
             realm.query<UserSchema>().find().map { it.toEntity() }
         }
     }
-
-    suspend fun addItemToUserCart(email: String, cartItemEntity: CartItemEntity) {
-        withContext(Dispatchers.IO) {
-            realm.write {
-                val user = realm.query<UserSchema>("email == $0", email).first().find()
-                user?.cartItems?.add(CartItemSchema().apply {
-                    id = cartItemEntity.id
-                    productId = cartItemEntity.productId
-                    quantity = cartItemEntity.quantity
-                })
-            }
-        }
-    }
-
-    suspend fun removeItemFromUserCart(email: String, cartItemId: String) {
-        withContext(Dispatchers.IO) {
-            realm.write {
-                val user = realm.query<UserSchema>("email == $0", email).first().find()
-                user?.cartItems?.removeIf { it.id == cartItemId }
-            }
-        }
-    }
-
-    suspend fun updateCartItemQuantity(email: String, cartItemId: String, quantity: Int) {
-        withContext(Dispatchers.IO) {
-            realm.write {
-                val cartItem = realm.query<CartItemSchema>("id == $0", cartItemId).first().find()
-                if (cartItem != null && cartItem.quantity != quantity) {
-                    cartItem.quantity = quantity
-                }
-            }
-        }
-    }
-
-    suspend fun updateUserCart(email: String, newCartItems: List<CartItemEntity>) {
-        withContext(Dispatchers.IO) {
-            realm.write {
-                val user = realm.query<UserSchema>("email == $0", email).first().find()
-                if (user != null) {
-                    // Update existing user's cart items
-                    user.cartItems.clear()
-                    user.cartItems.addAll(newCartItems.map { item ->
-                        CartItemSchema().apply {
-                            id = item.id
-                            productId = item.productId
-                            quantity = item.quantity
-                        }
-                    })
-                } else {
-                    // If user does not exist, create a new one
-
-                }
-            }
-        }
+    suspend fun addToCart(email: String):UserEntity?{
+      return realm.query<UserSchema>("email == $0", email).first().find()?.also { userSchema ->
+          realm.writeBlocking {
+             findLatest(userSchema)?.let {userSchema ->
+                 val items: List<CartItemSchema> =userSchema.cartItems+CartItemSchema().apply {
+                     this.quantity=5
+                     this.productId="updated"
+                 }
+                 userSchema.cartItems=items.toRealmList()
+             }
+          }
+      }?.toEntity()
     }
 
 
 
 
-    private fun updateCart(email: String, cartItems: List<CartItemEntity>) {
-        val user = realm.query<UserSchema>("email == $0", email).first().find()
-        user?.let {
-            it.cartItems.clear()
-            it.cartItems.addAll(cartItems.map { cartItem ->
-                CartItemSchema().apply {
-                    id = cartItem.id
-                    productId = cartItem.productId
-                    quantity = cartItem.quantity
-                }
-            })
-        }
-    }
+
+
+
+
+
 
 
 

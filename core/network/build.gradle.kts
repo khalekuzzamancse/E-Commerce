@@ -26,6 +26,12 @@ kotlin {
 
             }
         }
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlin.test.junit)
+            }
+        }
         val androidMain by getting{
             dependencies {
                 implementation(libs.ktor.client.okhttp)

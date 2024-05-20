@@ -1,16 +1,12 @@
 package database
 
-import CartItemEntity
 import UserEntity
 import database.api.UserListAPIs
 import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class UserListAPIsTest {
 
@@ -29,6 +25,20 @@ class UserListAPIsTest {
         assertNotNull(retrievedUser)
         assertEquals(user.name, retrievedUser.name)
         println("Added and retrieved user: $retrievedUser")
+    }
+    @Test
+    fun testUpdateUser() = runBlocking {
+        val user = UserEntity(
+            email = "test@example.com",
+            name = "Test User",
+            hashedPassword = "hashedPassword123",
+            cartItems = listOf()
+        )
+       userListAPIs.addUser(user)
+        val retrievedUser = userListAPIs.addToCart("test@example.com")
+        assertNotNull(retrievedUser)
+        assertTrue(user.name!=retrievedUser.name)
+        println("UpdatedName: $retrievedUser")
     }
 
     @Test
@@ -53,35 +63,5 @@ class UserListAPIsTest {
         println("All users retrieved: $retrievedUsers")
     }
 
-    @Test
-    fun testUpdateUserCart() = runBlocking {
-        val email = "updatecart@example.com"
-        val user = UserEntity(email, "Cart User", "hashedPasswordUpdate", listOf())
-        userListAPIs.addUser(user)  // This should complete and close its transaction
 
-        // Call update in a clean context
-        userListAPIs.updateUserCart(email, listOf(
-            CartItemEntity(UUID.randomUUID().toString(), "product1", 3),
-            CartItemEntity(UUID.randomUUID().toString(), "product2", 1)
-        ))
-
-        val updatedUser = userListAPIs.getUserByEmail(email)
-        assertNotNull(updatedUser)
-        assertEquals(2, updatedUser?.cartItems?.size)
-        println("Updated user cart: ${updatedUser?.cartItems}")
-    }
-
-    @Test
-    fun testRemoveItemFromUserCart() = runBlocking {
-        val email = "removeitem@example.com"
-        val user = UserEntity(email, "Remove Cart User", "hashedPasswordRemove", listOf())
-        val cartItem = CartItemEntity(UUID.randomUUID().toString(), "product1", 2)
-        userListAPIs.addUser(user)
-        userListAPIs.addItemToUserCart(email, cartItem)
-        userListAPIs.removeItemFromUserCart(email, cartItem.id)
-        val updatedUser = userListAPIs.getUserByEmail(email)
-        assertNotNull(updatedUser)
-        assertTrue(updatedUser?.cartItems?.isEmpty() ?: false)
-        println("User cart after removing item: ${updatedUser?.cartItems}")
-    }
 }
