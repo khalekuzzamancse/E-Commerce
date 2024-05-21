@@ -3,10 +3,12 @@ package product_catalog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,11 +26,13 @@ import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -62,8 +67,10 @@ internal fun CartRoute(
     onConfirmOrder: (NewOrder) -> Unit = {}
 ) {
     var controller by remember { mutableStateOf(CartController(emptyList())) }
-    LaunchedEffect(Unit) {
 
+    var showP by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        showP = true
         val items = APIFacade().fetchCarts().getOrDefault(emptyList()).map { cartItem ->
             val product = cartItem.product
             CartItem(
@@ -75,48 +82,68 @@ internal fun CartRoute(
             )
         }
         controller = CartController(items)
+        showP = false
 
     }
 
-    Scaffold(
-        floatingActionButton = {
-            Button(
-                onClick = controller::showConfirmationDialogue,
-                colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.secondary)
-            ) {
-                Text("Order Now")
-            }
-        },
-        floatingActionButtonPosition = FabPosition.EndOverlay
-    ) {
-        CartList(
-            cartItems = controller.items.collectAsState().value,
-            onQuantityChange = controller::onQuantityChanged,
-            onRemoveRequest = controller::onItemRemoveRequest
-        )
-        if (controller.showConfirmationDialog.collectAsState().value) {
-            _OrderConfirmationDialog(
-                totalValue = "${controller.totalPrice.collectAsState().value}",
-                discountAmount = "${controller.discount.collectAsState().value}",
-                message = controller.messageAboutCouponCode.collectAsState().value,
-                couponCode = controller.couponCode.collectAsState().value,
-                onCouponCodeChanged = controller::onCouponCodeChanged,
-                onDismissRequest = {
+    Box(Modifier.fillMaxSize()){
 
-                },
-                onConfirmOrder = {
-                    controller.onOrderConfirm()
-                    onConfirmOrder(
-                        NewOrder(
-                            items = controller.items.value,
-                            discount = controller.discount.value
-                        )
-                    )
+        Scaffold(
+            floatingActionButton = {
+                Button(
+                    onClick = controller::showConfirmationDialogue,
+                    enabled = controller.items.collectAsState().value.isNotEmpty(),
+                    colors = ButtonDefaults.buttonColors()
+                        .copy(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Order Now")
                 }
-            )
-        }
+            },
 
+            floatingActionButtonPosition = FabPosition.EndOverlay,
+
+            ) {
+            CartList(
+                cartItems = controller.items.collectAsState().value,
+                onQuantityChange = controller::onQuantityChanged,
+                onRemoveRequest = controller::onItemRemoveRequest
+            )
+            if (controller.showConfirmationDialog.collectAsState().value) {
+                _OrderConfirmationDialog(
+                    enabledConfirm = controller.enabledConfirm.collectAsState().value,
+                    totalValue = "${controller.totalPrice.collectAsState().value}",
+                    discountAmount = "${controller.discount.collectAsState().value}",
+                    couponCode = controller.couponCode.collectAsState().value,
+                    onCouponCodeChanged = controller::onCouponCodeChanged,
+                    onCancel = {
+                        controller.onDismissDialog()
+                    },
+                    onConfirmOrder = {
+                        controller.onOrderConfirm()
+                        onConfirmOrder(
+                            NewOrder(
+                                items = controller.items.value,
+                                discount = controller.discount.value
+                            )
+                        )
+                    }
+                ) {
+                    val errorMessage = controller.errorMessage.collectAsState().value
+                    if (errorMessage != null) {
+                        Snackbar {
+                            Text(errorMessage)
+                        }
+                    }
+
+                }
+            }
+
+        }
+        if (showP){
+            CircularProgressIndicator(Modifier.size(64.dp).align(Alignment.Center))
+        }
     }
+
 }
 
 data class NewOrder(
@@ -126,17 +153,19 @@ data class NewOrder(
 
 @Composable
 private fun _OrderConfirmationDialog(
+    enabledConfirm: Boolean,
     totalValue: String,
     discountAmount: String,
-    message: String?,
     couponCode: String,
     onCouponCodeChanged: (String) -> Unit,
-    onDismissRequest: () -> Unit,
-    onConfirmOrder: () -> Unit
-) {
+    onCancel: () -> Unit,
+    onConfirmOrder: () -> Unit,
+    snackBar: @Composable () -> Unit = {},
+
+    ) {
 
     AlertDialog(
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = onCancel,
         title = {
             Text(text = "Confirm Order")
         },
@@ -152,27 +181,31 @@ private fun _OrderConfirmationDialog(
                     label = { Text("Coupon Code") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (message != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = message)
+                snackBar()
 
-                }
             }
+
+
         },
         confirmButton = {
             Button(
+                enabled = enabledConfirm,
                 onClick = {
                     onConfirmOrder()
-                    onDismissRequest()
+
                 },
-                colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.secondary)
+                colors = ButtonDefaults.buttonColors()
+                    .copy(containerColor = MaterialTheme.colorScheme.secondary)
             ) {
                 Text("Confirm")
             }
         },
         dismissButton = {
-            Button(onClick = onDismissRequest,
-                colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.error)) {
+            Button(
+                onClick = onCancel,
+                colors = ButtonDefaults.buttonColors()
+                    .copy(containerColor = MaterialTheme.colorScheme.error)
+            ) {
                 Text("Cancel")
             }
         }
@@ -188,19 +221,32 @@ class CartController(
     val showConfirmationDialog = _showConfirmationDialog.asStateFlow()
     private val _totalPrice = MutableStateFlow(0)
     private val _discount = MutableStateFlow(0)
-    private val _messageAboutCouponCode = MutableStateFlow<String?>(null)
-    val messageAboutCouponCode = _messageAboutCouponCode.asStateFlow()
     private val _couponCode = MutableStateFlow("")
     val couponCode = _couponCode.asStateFlow()
     val totalPrice = _totalPrice.asStateFlow()
     val discount = _discount.asStateFlow()
-    private var isAlreadyGotDiscount = false
+    private var previousCoupon: String? = null
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage = _errorMessage.asStateFlow()
+    private val _enableConfirm = MutableStateFlow(true)
+    val enabledConfirm = _enableConfirm.asStateFlow()
 
+    //Has Bug,so use the index right now to delete
+//    fun onItemRemoveRequest(id: String) {
+//        _items.update { items ->
+//            items.filter { it.productId != id }
+//        }
+//    }
+    fun onItemRemoveRequest(i: Int) {
+        try {
 
-    fun onItemRemoveRequest(id: String) {
-        _items.update { items ->
-            items.filter { it.productId != id }
+            _items.update { items ->
+                items.filterIndexed { index, _ -> index != i }
+            }
+        } catch (e: Exception) {
+
         }
+
     }
 
     fun onQuantityChanged(id: String, isIncreased: Boolean) {
@@ -216,44 +262,56 @@ class CartController(
 
     //dialog section
     fun showConfirmationDialogue() {
+        //When no item in the cart,so do not show the order dialog
+        if (items.value.isEmpty())
+            return
         CoroutineScope(Dispatchers.Default).launch {
-            val previousCoupon = APIFacade().fetchCoupon().getOrNull()
+            previousCoupon = APIFacade().fetchCoupon().getOrNull()
             _totalPrice.update { items.value.sumOf { it.totalPrice }.toInt() }
             _showConfirmationDialog.update { true }
-            _messageAboutCouponCode.update {
-                if (previousCoupon != null)
-                    "You have a previous coupon:$previousCoupon"
-                else
-                    null
-            }
+            if (!previousCoupon.isNullOrEmpty())
+                updateErrorMessage("You have a previous coupon:$previousCoupon")
         }
 
     }
 
     fun onOrderConfirm() {
         CoroutineScope(Dispatchers.Default).launch {
+            _enableConfirm.update { false }
+            val isCouponValid =
+                (previousCoupon.isNullOrEmpty() && previousCoupon == couponCode.value)
+            if (isCouponValid) {
+                updateErrorMessage("Invalid Coupon code")
+                delay(3_000)
+            }
+
+
             val response = APIFacade().orderRequest(
                 coupon = couponCode.value,
                 items = items.value.map {
                     OrderedItem(it.productId, it.quantity)
                 }
             ).getOrNull()
-            if (response!=null){
-                _totalPrice.update { response.totalPrice-response.discount}
+            if (response != null) {
+                _totalPrice.update { response.totalPrice - response.discount }
                 _discount.update { response.discount }
+                if (discount.value <= 0)
+                    updateErrorMessage("You have No discount")
+                else
+                    updateErrorMessage("You have got discount:${_discount.value}")
+                delay(2000)
                 _showConfirmationDialog.update { true }
-                _messageAboutCouponCode.update {
-                    if (response .coupon!= null)
-                        "Congratulations,You have new Coupon:${response.coupon}"
-                    else
-                        null
-            }
+                if (response.coupon != null)
+                    updateErrorMessage(
+                        "Congratulations,You have new Coupon:${response.coupon},Use it next time.",
+                        5000
+                    )
 
             }
-            delay(3_000)//after 3 sec hide dialogue,to avoid multiple click
+            delay(7_000)//after 3 sec hide dialogue,to avoid multiple click
             _showConfirmationDialog.update { false }
             //remove the item from cart
-         val isRemoved= APIFacade().clearCart()
+            val isRemoved = APIFacade().clearCart()
             println("IsItemRemovecart:$isRemoved")
             //fetch the new cart
             //but right now let remove the local cart
@@ -264,8 +322,25 @@ class CartController(
 
     }
 
+    private fun updateErrorMessage(msg: String?, duration: Long = 3000) {
+        CoroutineScope(Dispatchers.Default).launch {
+            _errorMessage.update { msg }
+            delay(duration)
+            _errorMessage.update { null }
+        }
+
+
+    }
+
+
     fun onCouponCodeChanged(code: String) {
         _couponCode.update { code }
+    }
+
+    fun onDismissDialog() {
+        _showConfirmationDialog.update { false }
+        updateErrorMessage(null)
+
     }
 
 
@@ -275,7 +350,8 @@ class CartController(
 private fun CartList(
     cartItems: List<CartItem>,
     onQuantityChange: (id: String, increased: Boolean) -> Unit,
-    onRemoveRequest: (id: String) -> Unit,
+//    onRemoveRequest: (id: String) -> Unit,
+    onRemoveRequest: (Int) -> Unit,
 ) {
 
     LazyVerticalGrid(
@@ -284,11 +360,11 @@ private fun CartList(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(cartItems) { cartItem ->
+        itemsIndexed(cartItems) { index, cartItem ->
             CartItemView(
                 cartItem = cartItem,
                 onQuantityChange = onQuantityChange,
-                onRemoveRequest = { onRemoveRequest(cartItem.productId) }
+                onRemoveRequest = { onRemoveRequest(index) }
             )
         }
     }
@@ -302,7 +378,7 @@ fun CartItemView(
     onRemoveRequest: () -> Unit,
 ) {
     Surface(
-        modifier = Modifier .padding(2.dp),
+        modifier = Modifier.padding(2.dp),
         shape = RoundedCornerShape(4.dp),
         shadowElevation = 1.dp, //Daraz and Amazon app uses less elevation
     ) {

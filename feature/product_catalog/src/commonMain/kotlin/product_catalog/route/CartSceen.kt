@@ -7,6 +7,7 @@ import product_catalog.NewOrder
 @Composable
 fun CartScreen(
 ) {
+
      CartRoute()
 
 }

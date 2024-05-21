@@ -26,6 +26,11 @@ import androidx.navigation.navArgument
 import product_catalog.route.CartScreen
 import product_catalog.route.ProductDetailsScreen
 import product_catalog.route.ProductScreen
+import ui.LoginEvent
+import ui.LoginFactory
+import ui.LoginRoute
+import ui.RegisterFactory
+import ui.RegisterRoute
 
 enum class Route {
     ProductList, Cart
@@ -34,8 +39,65 @@ enum class Route {
 
 @Composable
 fun MainNavGraph() {
-    AppTheme{
-        _MainNavGraph()
+
+    var showLoginRoute by remember { mutableStateOf(true) }
+    AppTheme {
+
+        if (showLoginRoute){
+            AuthNavGraph(
+                onLoginSuccess = {
+                    showLoginRoute=false
+                }
+            )
+        }
+        else{
+             _MainNavGraph()
+        }
+
+
+    }
+
+}
+
+@Composable
+fun AuthNavGraph(
+    onLoginSuccess:()->Unit
+) {
+    val loginController = remember { LoginFactory.createLoginFormController() }
+    val registerController= remember{RegisterFactory.createController()}
+    val navController= rememberNavController()
+    NavHost(
+        startDestination = "Login",
+        navController = navController
+    ){
+        composable(route="Login"){
+            LoginRoute(
+                controller = loginController,
+                onEvent = { event ->
+                    when(event){
+                        is LoginEvent.LoginRequest->{
+                            val userName=event.username
+                            val password=event.password
+                            if (userName=="admin"&&password=="admin"){
+                                onLoginSuccess()
+                            }
+                        }
+                        LoginEvent.RegisterRequest->{
+                            navController.navigate("Register")
+                        }
+                    }
+
+                })
+        }
+        composable(route="Register"){
+            RegisterRoute(
+                controller = registerController
+            ){event->
+              navController.popBackStack()
+
+            }
+        }
+
     }
 
 }
@@ -124,7 +186,7 @@ private fun _NavGraph(
         composable(route = Route.Cart.name) {
             TopBarDecorator(
                 title = "Cart Items"
-            ){
+            ) {
                 CartScreen()
             }
 

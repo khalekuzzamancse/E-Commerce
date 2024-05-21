@@ -29,6 +29,7 @@ kotlin {
                 //view-model
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(project(":feature:product_catalog"))
+                implementation(project(":feature:auth"))
                 implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha03")
             }
         }

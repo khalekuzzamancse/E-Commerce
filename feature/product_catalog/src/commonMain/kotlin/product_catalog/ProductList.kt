@@ -1,5 +1,6 @@
 package product_catalog
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -70,10 +71,10 @@ internal fun ProductListRoute(
 @Composable
 fun ProductListDetailsRoute(
     product: Product,
-    onAddToCart:(Int)->Unit,
+    onAddToCart: (Int) -> Unit,
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        ProductDetails(product,onAddToCart)
+        ProductDetails(product, onAddToCart)
         ReviewSectionPreview()
     }
 
@@ -126,7 +127,7 @@ private fun ProductDetails(
                         name = product.name,
                         price = product.price.toString(),
                         description = product.description,
-                        onAddToCart =onAddToCart
+                        onAddToCart = onAddToCart
                     )
                 }
             }
@@ -177,6 +178,7 @@ private fun _ProductDescription(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProductList(products: List<Product>, onClick: (id: String) -> Unit) {
     LazyVerticalGrid(
@@ -185,8 +187,14 @@ fun ProductList(products: List<Product>, onClick: (id: String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(8.dp), //Daraz and amazon uses less gap
         horizontalArrangement = Arrangement.spacedBy(8.dp)//Daraz and amazon uses less gap
     ) {
-        items(products) { product ->
-            ProductItem(product) {
+        items(
+            items = products, key = {
+                it.id
+            }) { product ->
+            ProductItem(
+                product = product,
+                modifier = Modifier
+            ) {
                 onClick(product.id)
             }
         }
@@ -247,7 +255,8 @@ private fun _CartControlSection(
         Button(
             onClick = { onAddToCart(quantity) },
             modifier = Modifier.sizeIn(maxWidth = 150.dp),
-            colors = ButtonDefaults.buttonColors().copy(containerColor = MaterialTheme.colorScheme.secondary)
+            colors = ButtonDefaults.buttonColors()
+                .copy(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
             Text(text = "Add to Cart", fontSize = 18.sp)
         }
@@ -329,9 +338,12 @@ fun ReviewSectionPreview() {
 
 
 @Composable
-fun ProductItem(product: Product, onClick: () -> Unit) {
+fun ProductItem(
+    modifier: Modifier=Modifier,
+    product: Product, onClick: () -> Unit
+) {
     Surface(
-        modifier = Modifier .padding(2.dp),
+        modifier = modifier.padding(2.dp),
         shape = RoundedCornerShape(4.dp),
         shadowElevation = 1.dp, //Daraz and Amazon app uses less elevation
     ) {
