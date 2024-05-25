@@ -9,7 +9,7 @@ junit = "4.13.2"
 lifecycleLivedataKtx = "2.7.0"
 mapsCompose = "4.3.3"
 media3Exoplayer = "1.2.1"
-navigationCompose = "2.7.7"
+navigationCompose = "2.7.0-alpha03"
 coil3-io = "3.0.0-alpha02"
 ktor = "2.3.7"
 windowSize="0.3.1"
@@ -23,6 +23,7 @@ material = "1.11.0"
 core = "1.12.0"
 playServicesLocation = "21.2.0"
 realmVersion = "1.13.0"
+lifecycleViewModel = "2.8.0-rc01"
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-activity-compose= { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
@@ -61,7 +62,10 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 # local database
 database-realm-base={ module = "io.realm.kotlin:library-base", version.ref = "realmVersion" }
 database-realm-sync={ module = "io.realm.kotlin:library-sync", version.ref = "realmVersion" }
-
+## Navigation
+navigation={module= "org.jetbrains.androidx.navigation:navigation-compose",version.ref="navigationCompose"}
+##GEMINI
+lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycleViewModel"}
 
 
 [plugins]

@@ -34,7 +34,7 @@ we are trying to hide it from IDE suggestion by it:
 
         return try {
             val response: T = httpClient.get(url).body<T>()
-            println(response)
+//            println(response)
             Result.success(response)
         } catch (ex: Exception) {
             Result.failure(Throwable(ex))

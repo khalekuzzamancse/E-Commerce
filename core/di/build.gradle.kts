@@ -27,7 +27,7 @@ kotlin {
         }
         val desktopMain by getting{
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
+
             }
         }
     }

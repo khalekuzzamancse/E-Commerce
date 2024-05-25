@@ -11,7 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import chat.ChatNavGraph
 import product_catalog.route.CartScreen
 import product_catalog.route.ProductDetailsScreen
 import product_catalog.route.ProductScreen
@@ -33,7 +33,7 @@ import ui.RegisterFactory
 import ui.RegisterRoute
 
 enum class Route {
-    ProductList, Cart
+    ProductList, Cart,Chat
 
 }
 
@@ -114,6 +114,9 @@ fun _MainNavGraph() {
                 Destination.Products -> {
                     navigateAsTopDestination(navController, Route.ProductList)
                 }
+            Destination.Chat -> {
+                navigateAsTopDestination(navController, Route.Chat)
+            }
 
                 Destination.Cart -> {
                     navigateAsTopDestination(navController, Route.Cart)
@@ -143,8 +146,12 @@ private fun _NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Route.ProductList.name
+        startDestination = Route.Chat.name
     ) {
+        composable(route = Route.Chat.name) {
+                ChatNavGraph()
+
+        }
         composable(route = Route.ProductList.name) {
             TopBarDecorator(
                 title = "Product List",

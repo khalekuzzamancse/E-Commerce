@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AddShoppingCart
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ProductionQuantityLimits
 import androidx.compose.material.icons.outlined.AddShoppingCart
 import androidx.compose.material.icons.outlined.ProductionQuantityLimits
@@ -91,6 +94,12 @@ private fun createNonExpandedDestination(): List<NavigationItem> {
     Icons.Default.AddShoppingCart
     return listOf(
         NavigationItem(
+            label = "Chat",
+            focusedIcon = Icons.AutoMirrored.Filled.Chat,
+            unFocusedIcon =  Icons.AutoMirrored.Outlined.Chat,
+            destination = Destination.Chat
+        ),
+        NavigationItem(
             label = "Products",
             focusedIcon = Icons.Filled.ProductionQuantityLimits,
             unFocusedIcon = Icons.Outlined.ProductionQuantityLimits,
@@ -102,6 +111,7 @@ private fun createNonExpandedDestination(): List<NavigationItem> {
             unFocusedIcon = Icons.Outlined.AddShoppingCart,
             destination = Destination.Cart
         )
+
     )
 }
 
@@ -163,7 +173,7 @@ fun BottomBarToNavRailDecorator(
 }
 
 enum class Destination(val order: Int) {
-    Products(0), Cart(1), IMAGE_PICKER(2), VIDEO_PICKER(3),
+    Products(0), Cart(1), IMAGE_PICKER(2), Chat(3),
     MediaPicker(2),
     //has the same order as image picker so that  it  can used as replacement of image picker and it selectable
     None(5)

@@ -178,7 +178,6 @@ private fun _ProductDescription(
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProductList(products: List<Product>, onClick: (id: String) -> Unit) {
     LazyVerticalGrid(

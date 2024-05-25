@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsCompose)
+
 }
 kotlin {
     androidTarget {
@@ -17,6 +18,7 @@ kotlin {
     sourceSets{
         val commonMain by getting{
             dependencies {
+                //For Compose multiplatform UI
                 implementation(compose.ui)
                 implementation(compose.material3)
                 implementation(compose.animation)
@@ -25,13 +27,31 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.runtime)
                 implementation(libs.windowSize)
-//                implementation(compose.components.resources)
-                //view-model
+
+                //For coroutines
                 implementation(libs.kotlinx.coroutines.core)
-                implementation(project(":feature:product_catalog"))
-                implementation(project(":feature:auth"))
-                implementation(project(":feature:chat"))
-                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha03")
+
+                //For navigation with compose
+                implementation(libs.navigation)
+                //For gemini
+                implementation("dev.shreyaspatil.generativeai:generativeai-google:0.5.0-1.0.0")
+                implementation(libs.lifecycle.viewmodel)
+
+                //NetworkIO
+                implementation(libs.kotlinx.coroutines.core)
+                //network IO for image loading
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.coil3.network)
+                implementation(libs.coil3)
+                implementation(libs.coil3.core)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(project(":core:database"))
+                implementation(project(":core:network"))
+
+
+
             }
         }
         val androidMain by getting{
@@ -42,7 +62,7 @@ kotlin {
         }
         val desktopMain by getting{
             dependencies {
-                //implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing")
             }
         }
     }
@@ -51,10 +71,11 @@ kotlin {
 
 }
 android {
-    namespace = "navigation"
+    namespace = "gemini"
     compileSdk = 34
     defaultConfig {
         minSdk = 27
     }
 
 }
+
