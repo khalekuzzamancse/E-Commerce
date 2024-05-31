@@ -18,7 +18,18 @@ class APIFacade {
      //   println(res)
         return res
     }
-
+    suspend fun fetchProductDetails(id: String): Result<ProductDetailsEntity> {
+        //  val res = GetRequests().request<ProductEntity>("$baseUrl/api/product/$id")
+        val res = GetRequests().request<ProductDetailsEntity>("$baseUrl/api/product/details/$id")
+        //   println(res)
+        return res
+    }
+    suspend fun fetchProductOffer(id: String): Result<ProductOfferEntity> {
+        //  val res = GetRequests().request<ProductEntity>("$baseUrl/api/product/$id")
+        val res = GetRequests().request<ProductOfferEntity>("$baseUrl/product/offer/$id")
+        //   println(res)
+        return res
+    }
     /** @param userId as email */
     suspend fun fetchCarts(): Result<List<CartItem>> {
         val res = GetRequests().request<List<CartItem>>("$baseUrl/api/cart/get/$userId")
