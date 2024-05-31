@@ -1,6 +1,5 @@
 package product_catalog
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -257,7 +256,10 @@ private fun _CartControlSection(
             colors = ButtonDefaults.buttonColors()
                 .copy(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Text(text = "Add to Cart", fontSize = 18.sp)
+//            Text(text = "Add to Cart", fontSize = 18.sp)
+            //TODO:for temporary we are directly order from details,without adding to cart.refactor it later
+            Text(text = "Order now", fontSize = 18.sp)
+
         }
     }
 }

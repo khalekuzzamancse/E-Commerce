@@ -1,6 +1,7 @@
 package netwok
 
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
 @Serializable
 data class OrderResponse(
@@ -19,4 +20,10 @@ data class OrderRequest(
     val userId: String,
     val coupon: String?,
     val items: List<OrderedItem>,
+)
+@Serializable
+data class PurchasedResponse(
+    var purchaseId: String? = null,
+    var discountId: String? = null,
+    var returnExpireDate: String? = null
 )
