@@ -17,15 +17,11 @@ import kotlinx.coroutines.launch
 import netwok.APIFacade
 import netwok.OrderedItem
 import netwok.ProductDetailsEntity
+import product_catalog.DiscountByPrice
 import product_catalog.ProductDetails
 import product_catalog.ProductDetailsRoute2
 import product_catalog.ProductReview
 
-data class ProductOffer(
-    val name:String,
-    val requiredQuantity:Int,
-    val freeQuantity:Int,
-)
 @Composable
 fun ProductDetailsScreen(
     id: String,
@@ -63,12 +59,11 @@ fun ProductDetailsScreen(
                                     println("ProductListDetailsRoute:$result")
                                     val res = APIFacade().orderConfirm(products)
                                     if (res.isSuccess) {
-                                        res.getOrNull()?.let {response->
-                                            if (response.isNotEmpty()){
+                                        res.getOrNull()?.let { response ->
+                                            if (response.isNotEmpty()) {
                                                 snackBarHostState.showSnackbar("Purchased successfully")
                                                 println("ProductListDetailsRoute:$res")
-                                            }
-                                            else{
+                                            } else {
                                                 snackBarHostState.showSnackbar("Failed to purchase")
                                             }
 
@@ -98,15 +93,18 @@ fun ProductDetailsScreen(
 
 // Converter function from Entity to Model
 private fun convertEntityToModel(detailsEntity: ProductDetailsEntity): ProductDetails {
+    val discountByPrice = detailsEntity.discountByPrice
     return ProductDetails(
         id = detailsEntity.productId,
         name = detailsEntity.name,
         imagesLink = detailsEntity.imagesLink,
         description = detailsEntity.description,
-        originalPrice = detailsEntity.originalPrice,
-        discount = detailsEntity.priceDiscount,
-        priceOnDiscount = detailsEntity.priceOnDiscount,
-        offeredProduct = detailsEntity.offeredProduct?.let { offerEntity ->
+        price = detailsEntity.price,
+        discountByPrice = if (discountByPrice != null) DiscountByPrice(
+            discountByPrice.amount,
+            discountByPrice.expirationTimeInMs
+        ) else null,
+        offeredProduct = detailsEntity.discountByProduct?.let { offerEntity ->
             product_catalog.ProductOffer(
                 productName = offerEntity.productName,
                 imageLink = offerEntity.imageLink,

@@ -8,10 +8,9 @@ data class ProductDetailsEntity(
     val name: String,
     val imagesLink: List<String>,
     val description: String,
-    val originalPrice: String,
-    val priceDiscount: String,
-    val priceOnDiscount: String,
-    val offeredProduct: ProductOfferEntity?,
+    val price: Int,
+    val discountByPrice:DiscountByPriceEntity?,
+    val discountByProduct: ProductOfferEntity?,
     val reviews: List<ProductReviewEntity>
 )
 
@@ -28,4 +27,9 @@ data class ProductOfferEntity(
     val imageLink: String,
     val requiredQuantity: String,
     val freeQuantity: String
+)
+@Serializable
+data class DiscountByPriceEntity(
+    val amount: Int,
+    val expirationTimeInMs: Long
 )

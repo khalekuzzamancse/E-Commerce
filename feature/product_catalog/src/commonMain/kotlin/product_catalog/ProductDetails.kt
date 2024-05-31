@@ -52,7 +52,7 @@ fun ProductDetailsRoute2(
     onAddToCart: (Int) -> Unit,
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        ProductDetails2(product, onAddToCart)
+        ProductDetails(product, onAddToCart)
         product.reviews?.let {
             HorizontalDivider()
             ReviewSectionPreview(product.reviews)
@@ -65,7 +65,7 @@ fun ProductDetailsRoute2(
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-private fun ProductDetails2(
+private fun ProductDetails(
     product: ProductDetails,
     onAddToCart: (Int) -> Unit,
 ) {
@@ -87,14 +87,13 @@ private fun ProductDetails2(
                     )
                     _ProductDetailsSection(
                         name = product.name,
-                        originalPrice = product.originalPrice,
-                        discount = product.discount,
-                        priceOnDiscount = product.priceOnDiscount,
+                        price = product.price,
+                        discountByPrice = product.discountByPrice,
                         description = product.description,
                         onAddToCart = onAddToCart
                     )
                     HorizontalDivider()
-                    product.offeredProduct?.let { _OfferedProductSection(it)  }
+                    product.offeredProduct?.let { _OfferedProductSection(it) }
 
 
                 }
@@ -110,18 +109,17 @@ private fun ProductDetails2(
                         ),
                         urls = product.imagesLink
                     )
-                    Column (Modifier.weight(1f - weight)){
+                    Column(Modifier.weight(1f - weight)) {
                         _ProductDetailsSection(
                             modifier = Modifier,
                             name = product.name,
-                            originalPrice = product.originalPrice,
-                            discount = product.discount,
-                            priceOnDiscount = product.priceOnDiscount,
+                            price = product.price,
+                            discountByPrice = product.discountByPrice,
                             description = product.description,
                             onAddToCart = onAddToCart
                         )
                         HorizontalDivider()
-                        product.offeredProduct?.let { _OfferedProductSection(it)  }
+                        product.offeredProduct?.let { _OfferedProductSection(it) }
                     }
 
                 }
@@ -134,14 +132,13 @@ private fun ProductDetails2(
 
 @Composable
 private fun _OfferedProductSection(product: ProductOffer) {
-    println("_OfferedProductSection:$product")
     Column {
         Text("Special Offer")
         Text("Buy ${product.requiredQuantity} get ${product.freeQuantity} ${product.productName} free")
-            _ProductImage(
-                modifier = Modifier.sizeIn(maxWidth = 80.dp),
-                urls = listOf( product.imageLink)
-            )
+        _ProductImage(
+            modifier = Modifier.sizeIn(maxWidth = 80.dp),
+            urls = listOf(product.imageLink)
+        )
 
 
     }
@@ -154,12 +151,17 @@ data class ProductDetails(
     val name: String,
     val imagesLink: List<String>,
     val description: String,
-    val originalPrice: String,
-    val discount: String,
-    val priceOnDiscount: String,
+    val price: Int,
+    val discountByPrice: DiscountByPrice?,
     val offeredProduct: ProductOffer?,
     val reviews: List<ProductReview>?
 )
+
+data class DiscountByPrice(
+    val amount: Int,
+    val expirationTimeInMs: Long
+)
+
 
 data class ProductReview(
     val reviewerName: String,
@@ -179,9 +181,8 @@ data class ProductOffer(
 private fun _ProductDetailsSection(
     modifier: Modifier = Modifier,
     name: String,
-    originalPrice: String,
-    discount: String,
-    priceOnDiscount: String,
+    price: Int,
+    discountByPrice: DiscountByPrice?,
     description: String,
     onAddToCart: (Int) -> Unit,
 ) {
@@ -193,19 +194,23 @@ private fun _ProductDetailsSection(
         _ProductPrice(
             modifier = Modifier.padding(start = 8.dp, end = 8.dp),
             label = "Original Price",
-            price = "$originalPrice Tk"
+            price = "$price Tk"
         )
-        _ProductPrice(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-            label = "Discount",
-            price = "$discount Tk"
-        )
+        discountByPrice?.let {
+            _ProductPrice(
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                label = "Discount",
+                price = "${it.amount} Tk"
+            )
+            _ProductPrice(
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                label = "Price onDiscount",
+                price = "${price-it.amount} Tk"
+            )
+        }
 
-        _ProductPrice(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-            label = "Price onDiscount",
-            price = "$priceOnDiscount Tk"
-        )
+
+
         _ProductDescription(
             modifier = Modifier.padding(start = 8.dp, end = 8.dp),
             description = description
