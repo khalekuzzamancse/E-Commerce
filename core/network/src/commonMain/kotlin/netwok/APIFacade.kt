@@ -5,18 +5,22 @@ package netwok
  */
 class APIFacade {
     private val baseUrl = "http://localhost:8080"
-    private val userId="admin"
-    suspend fun fetchProducts() =
-        GetRequests().request<List<ProductEntity>>("$baseUrl/api/product")
-    suspend fun fetchProduct(id:String):Result<ProductEntity>{
-      val res=  GetRequests().request<ProductEntity>("$baseUrl/api/product/$id")
+    private val userId = "admin"
+    suspend fun fetchProducts(): Result<List<ProductEntity>>{
+       val res= GetRequests().request<List<ProductEntity>>("$baseUrl/api/product")
+        println(res)
+        return res
+    }
+
+    suspend fun fetchProduct(id: String): Result<ProductEntity> {
+        val res = GetRequests().request<ProductEntity>("$baseUrl/api/product/$id")
         println(res)
         return res
     }
 
     /** @param userId as email */
-    suspend fun fetchCarts():Result<List<CartItem>>{
-        val res=GetRequests().request<List<CartItem>>("$baseUrl/api/cart/get/$userId")
+    suspend fun fetchCarts(): Result<List<CartItem>> {
+        val res = GetRequests().request<List<CartItem>>("$baseUrl/api/cart/get/$userId")
         println(res)
         return res
     }
@@ -25,17 +29,19 @@ class APIFacade {
     suspend fun fetchCoupon() =
         GetRequests().request<String>("$baseUrl/api/user/get-coupon/$userId")
 
-    suspend fun addToCart(productId:String,quantity:Int): Result<Unit> {
+    suspend fun addToCart(productId: String, quantity: Int): Result<Unit> {
         return post<Unit>(
             url = "$baseUrl/api/cart/add",
             body = CartEntity(userId, productId, quantity)
         )
     }
+
     suspend fun clearCart(): Result<Unit> {
         return delete<Unit>(
             url = "$baseUrl/api/cart/delete/$userId",
         )
     }
+
     suspend fun updateCarts(carts: List<CartEntity>): Result<Unit> {
         return update<Unit>(
             url = "$baseUrl/api/cart/update",
@@ -43,10 +49,10 @@ class APIFacade {
         )
     }
 
-    suspend fun orderRequest(items:List<OrderedItem>, coupon:String?): Result<OrderResponse> {
+    suspend fun orderRequest(items: List<OrderedItem>, coupon: String?): Result<OrderResponse> {
         return post<OrderResponse>(
             url = "$baseUrl/api/cart/order/request",
-            body = OrderRequest(userId = userId,coupon=coupon, items = items)
+            body = OrderRequest(userId = userId, coupon = coupon, items = items)
         )
     }
 

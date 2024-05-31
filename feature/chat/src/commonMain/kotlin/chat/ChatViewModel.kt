@@ -68,9 +68,7 @@ class ChatViewModel : ChatUIController() {
 
 }
 suspend fun getContext(): String {
-   return "Answer the  question by using the concept from here,if the question is not " +
-            "under the concept/paragraph then reply as =\"Sorry\"." +
-            "here is the concept:${ APIFacade().fetchProducts().getOrDefault(emptyList()).map {
+   return "$code${ APIFacade().fetchProducts().getOrDefault(emptyList()).map {
                 "Name: ${it.name}, Price: ${it.price},Description: ${it.description}"
             }}"
 

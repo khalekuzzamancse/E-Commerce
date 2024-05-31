@@ -34,7 +34,7 @@ fun ProductScreen(
                 images = it.images,
                 price = it.price,
                 description = it.description,
-                type = it.type,
+                type = "it.type",
                 amountAvailable = it.amountAvailable
             )
         }
