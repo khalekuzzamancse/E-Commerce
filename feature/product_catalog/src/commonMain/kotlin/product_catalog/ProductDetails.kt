@@ -173,7 +173,8 @@ data class ProductOffer(
     val productName: String,
     val imageLink: String,
     val requiredQuantity: String,
-    val freeQuantity: String
+    val freeQuantity: String,
+    val expirationTimeInMs:Long,
 )
 
 

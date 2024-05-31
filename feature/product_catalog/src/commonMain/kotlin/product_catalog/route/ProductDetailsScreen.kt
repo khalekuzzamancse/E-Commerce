@@ -109,7 +109,8 @@ private fun convertEntityToModel(detailsEntity: ProductDetailsEntity): ProductDe
                 productName = offerEntity.productName,
                 imageLink = offerEntity.imageLink,
                 requiredQuantity = offerEntity.requiredQuantity,
-                freeQuantity = offerEntity.freeQuantity
+                freeQuantity = offerEntity.freeQuantity,
+                expirationTimeInMs = offerEntity.expirationTimeInMs
             )
         },
         reviews = detailsEntity.reviews.map { reviewEntity ->
