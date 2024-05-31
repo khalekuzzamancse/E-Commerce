@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="product_return-desktop">
+    <output-path>$PROJECT_DIR$/feature/product_return/build/libs</output-path>
+    <root id="archive" name="product_return-desktop.jar">
+      <element id="module-output" name="E-Commerce.feature.product_return.desktopMain" />
+    </root>
+  </artifact>
+</component>

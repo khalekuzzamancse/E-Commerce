@@ -23,7 +23,7 @@ val coreModules= listOf(":core",":core:network",":core:di",":core:database")
 val uiLayers=listOf(":layer","layer:ui","layer:ui:common_ui")
 val domainLayers=listOf(":layer:domain")
 val dataLayers=listOf(":layer:data")
-val feature=listOf(":feature",":feature:navigation",":feature:auth",":feature:product_catalog",":feature:chat")
+val feature=listOf(":feature",":feature:navigation",":feature:auth",":feature:product_catalog",":feature:chat",":feature:product_return")
 
 val allModules=applications+coreModules+uiLayers+domainLayers+dataLayers+feature
 include(allModules)

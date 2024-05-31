@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="chat-desktop">
+    <output-path>$PROJECT_DIR$/feature/chat/build/libs</output-path>
+    <root id="archive" name="chat-desktop.jar">
+      <element id="module-output" name="E-Commerce.feature.chat.desktopMain" />
+    </root>
+  </artifact>
+</component>

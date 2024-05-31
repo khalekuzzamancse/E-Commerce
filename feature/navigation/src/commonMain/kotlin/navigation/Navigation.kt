@@ -26,6 +26,7 @@ import chat.ChatNavGraph
 import product_catalog.route.CartScreen
 import product_catalog.route.ProductDetailsScreen
 import product_catalog.route.ProductScreen
+import product_return.ProductReturnScreen
 import ui.LoginEvent
 import ui.LoginFactory
 import ui.LoginRoute
@@ -192,9 +193,10 @@ private fun _NavGraph(
         }
         composable(route = Route.Cart.name) {
             TopBarDecorator(
-                title = "Cart Items"
+                title = "Purchased"
             ) {
-                CartScreen()
+             //   CartScreen()
+                ProductReturnScreen()
             }
 
         }

@@ -11,3 +11,11 @@ data class ProductEntity(
     val description: String,
     val amountAvailable: Int
 )
+@Serializable
+data class PurchasedProductEntity(
+    val purchaseId: String,
+    val productName: String,
+    val productImageUrl: String,
+    val quantity: Int,
+    val returnExpireDate: String,
+)

@@ -13,9 +13,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AddShoppingCart
+import androidx.compose.material.icons.filled.AssignmentReturned
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ProductionQuantityLimits
 import androidx.compose.material.icons.outlined.AddShoppingCart
+import androidx.compose.material.icons.outlined.AssignmentReturned
 import androidx.compose.material.icons.outlined.ProductionQuantityLimits
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -106,9 +108,9 @@ private fun createNonExpandedDestination(): List<NavigationItem> {
             destination = Destination.Products
         ),
         NavigationItem(
-            label = "Cart",
-            focusedIcon = Icons.Default.AddShoppingCart,
-            unFocusedIcon = Icons.Outlined.AddShoppingCart,
+            label = "Purchased",
+            focusedIcon = Icons.Default.AssignmentReturned,
+            unFocusedIcon = Icons.Outlined.AssignmentReturned,
             destination = Destination.Cart
         )
 

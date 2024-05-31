@@ -25,6 +25,10 @@ class APIFacade {
        // println(res)
         return res
     }
+    suspend fun fetchPurchasedProducts():Result<List<PurchasedProductEntity>>{
+        val res=GetRequests().request<List<PurchasedProductEntity>>("$baseUrl/api/purchase/$userId")
+        return res
+    }
 
     /** @param userId as email */
     suspend fun fetchCoupon() =

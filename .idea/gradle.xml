@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/feature/chat" />
             <option value="$PROJECT_DIR$/feature/navigation" />
             <option value="$PROJECT_DIR$/feature/product_catalog" />
+            <option value="$PROJECT_DIR$/feature/product_return" />
             <option value="$PROJECT_DIR$/layer" />
             <option value="$PROJECT_DIR$/layer/data" />
             <option value="$PROJECT_DIR$/layer/domain" />
