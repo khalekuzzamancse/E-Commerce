@@ -65,7 +65,7 @@ import java.time.LocalDate
 @Composable
 internal fun ProductReturnRoute(
 ) {
-    var controller by remember { mutableStateOf(CartController(emptyList())) }
+    var controller by remember { mutableStateOf(ReturnProductController(emptyList())) }
 
     var showP by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -80,7 +80,7 @@ internal fun ProductReturnRoute(
             )
         }
         // val items = getDummyPurchaseProduct()
-        controller = CartController(items)
+        controller = ReturnProductController(items)
         showP = false
 
     }
@@ -192,7 +192,7 @@ private fun _ReturnConfirmationDialog(
     )
 }
 
-class CartController(
+class ReturnProductController(
     items: List<PurchasedProduct>,
 ) {
     private val _items = MutableStateFlow(items)
@@ -209,9 +209,10 @@ class CartController(
     val errorMessage = _errorMessage.asStateFlow()
     private val _enableConfirm = MutableStateFlow(true)
     val enabledConfirm = _enableConfirm.asStateFlow()
+
     init {
         CoroutineScope(Dispatchers.Default).launch {
-            _returnAmount.collect{amount->
+            _returnAmount.collect { amount ->
                 if (amount.isEmpty())
                     _enableConfirm.update { false }
             }
@@ -241,12 +242,29 @@ class CartController(
     }
 
     //dialog section
-    fun showConfirmationDialogue() {
+    private fun showConfirmationDialogue() {
         _showConfirmationDialog.update { true }
 
     }
 
     fun onConfirm() {
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                val res = APIFacade().requestForReturn(
+                    purchaseId = returningItem!!.purchaseId,
+                    returnQuantity = returnAmount.value.toInt()
+                )
+                if (res.isSuccess)
+                    updateErrorMessage(res.getOrThrow().message)
+                else
+                    updateErrorMessage("Return request failed:${res.exceptionOrNull()}")
+
+            } catch (e: Exception) {
+                updateErrorMessage("Return request failed:$e")
+            }
+
+        }
+
 
     }
 

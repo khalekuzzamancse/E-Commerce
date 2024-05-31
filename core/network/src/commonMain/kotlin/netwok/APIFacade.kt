@@ -40,6 +40,12 @@ class APIFacade {
             body = CartEntity(userId, productId, quantity)
         )
     }
+    suspend fun requestForReturn(purchaseId: String, returnQuantity: Int): Result<ProductReturnRequestResponse> {
+        return post<ProductReturnRequestResponse>(
+            url = "$baseUrl/api/product/return/request",
+            body = ProductReturnRequestEntity(purchaseId, returnQuantity.toString())
+        )
+    }
 
     suspend fun clearCart(): Result<Unit> {
         return delete<Unit>(
