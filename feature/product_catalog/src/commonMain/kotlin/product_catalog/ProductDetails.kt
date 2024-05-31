@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,6 +54,7 @@ fun ProductDetailsRoute2(
     Column(Modifier.verticalScroll(rememberScrollState())) {
         ProductDetails2(product, onAddToCart)
         product.reviews?.let {
+            HorizontalDivider()
             ReviewSectionPreview(product.reviews)
         }
 
@@ -91,6 +93,10 @@ private fun ProductDetails2(
                         description = product.description,
                         onAddToCart = onAddToCart
                     )
+                    HorizontalDivider()
+                    product.offeredProduct?.let { _OfferedProductSection(it)  }
+
+
                 }
             }
 
@@ -104,21 +110,43 @@ private fun ProductDetails2(
                         ),
                         urls = product.imagesLink
                     )
-                    _ProductDetailsSection(
-                        modifier = Modifier.weight(1f - weight),
-                        name = product.name,
-                        originalPrice = product.originalPrice,
-                        discount = product.discount,
-                        priceOnDiscount = product.priceOnDiscount,
-                        description = product.description,
-                        onAddToCart = onAddToCart
-                    )
+                    Column (Modifier.weight(1f - weight)){
+                        _ProductDetailsSection(
+                            modifier = Modifier,
+                            name = product.name,
+                            originalPrice = product.originalPrice,
+                            discount = product.discount,
+                            priceOnDiscount = product.priceOnDiscount,
+                            description = product.description,
+                            onAddToCart = onAddToCart
+                        )
+                        HorizontalDivider()
+                        product.offeredProduct?.let { _OfferedProductSection(it)  }
+                    }
+
                 }
             }
         }
 
 
     }
+}
+
+@Composable
+private fun _OfferedProductSection(product: ProductOffer) {
+    println("_OfferedProductSection:$product")
+    Column {
+        Text("Special Offer")
+        Text("Buy ${product.requiredQuantity} get ${product.freeQuantity} ${product.productName} free")
+            _ProductImage(
+                modifier = Modifier.sizeIn(maxWidth = 80.dp),
+                urls = listOf( product.imageLink)
+            )
+
+
+    }
+
+
 }
 
 data class ProductDetails(
@@ -318,7 +346,7 @@ fun ReviewSection(reviews: List<Review>) {
 fun ReviewSectionPreview(reviews: List<ProductReview>) {
     ReviewSection(reviews.map {
         Review(
-            it.reviewerName,it.comment,it.imagesLink
+            it.reviewerName, it.comment, it.imagesLink
         )
     })
 
