@@ -106,7 +106,7 @@ fun AuthNavGraph(
 @Composable
 fun _MainNavGraph() {
     val navController = rememberNavController()
-    var selected by remember { mutableStateOf(Destination.Products) }
+    var selected by remember { mutableStateOf(Destination.Chat) }
     NavigationLayoutDecorator(
         selected = selected,
         onDestinationSelected = { destination ->

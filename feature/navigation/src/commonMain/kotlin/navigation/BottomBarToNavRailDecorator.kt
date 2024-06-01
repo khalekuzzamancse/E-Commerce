@@ -14,9 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.AddShoppingCart
 import androidx.compose.material.icons.filled.AssignmentReturned
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ProductionQuantityLimits
-import androidx.compose.material.icons.outlined.AddShoppingCart
 import androidx.compose.material.icons.outlined.AssignmentReturned
 import androidx.compose.material.icons.outlined.ProductionQuantityLimits
 import androidx.compose.material3.Badge
@@ -37,7 +35,6 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
@@ -66,17 +63,7 @@ fun NavigationLayoutDecorator(
 
     val items =  createNonExpandedDestination()
 
-    LaunchedEffect(selected){
-        //if selected destination is MediaPicker,but the window size changed to non expanded
-        //in that case the media picker is no longer available,so by default select the image picker
-        // and the vice versa
-        if (selected==Destination.MediaPicker&&windowSize!=expanded){
-            onDestinationSelected(Destination.IMAGE_PICKER)
-        }
-        if (selected==Destination.IMAGE_PICKER&&windowSize==expanded){
-            onDestinationSelected(Destination.MediaPicker)
-        }
-    }
+
 
     BottomBarToNavRailDecorator(
         modifier = modifier,
@@ -175,10 +162,9 @@ fun BottomBarToNavRailDecorator(
 }
 
 enum class Destination(val order: Int) {
-    Products(0), Cart(1), IMAGE_PICKER(2), Chat(3),
-    MediaPicker(2),
+    Products(1), Cart(2),  Chat(0),
     //has the same order as image picker so that  it  can used as replacement of image picker and it selectable
-    None(5)
+    None(3)
 }
 
 /*

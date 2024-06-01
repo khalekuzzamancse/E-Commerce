@@ -2,6 +2,7 @@ package product_catalog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,6 +28,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +41,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
+import kotlinx.coroutines.delay
 
 /**
  * Product and product details in the same file because they share common component that can be re-use
@@ -52,22 +55,48 @@ fun ProductDetailsRoute2(
     onAddToCart: (Int) -> Unit,
 ) {
     Column(Modifier.verticalScroll(rememberScrollState())) {
-        ProductDetails(product, onAddToCart)
-        product.reviews?.let {
-            HorizontalDivider()
-            ReviewSectionPreview(product.reviews)
-        }
+
+
+        _ProductDetailsSlot(
+            imageSection = {
+                _ProductImage(
+                    modifier = Modifier.sizeIn(maxWidth = 100.dp),
+                    urls = product.imagesLink
+                )
+            },
+            detailsSection = {
+                _ProductDetailsSection(
+                    name = product.name,
+                    price = product.price,
+                    discountByPrice = product.discountByPrice,
+                    description = product.description,
+                    onAddToCart = onAddToCart
+                )
+            },
+            offeredProductSection = product.offeredProduct?.let { { _OfferedProductSection(it) } },
+            reviewSection = product.reviews?.let { { _ReviewSectionPreview(it) } }
+
+//            offeredProductSection  = if (product.offeredProduct == null) { null } else { { _OfferedProductSection(product.offeredProduct) } },
+//            reviewSection = if (product.reviews == null) { null } else { { _ReviewSectionPreview(product.reviews) } }
+        )
 
     }
 
 
 }
 
+
+/**
+ * Using slot so that duplicate code can avoid ,and can change the underlying layout,without
+ * affecting the client code
+ */
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-private fun ProductDetails(
-    product: ProductDetails,
-    onAddToCart: (Int) -> Unit,
+private fun _ProductDetailsSlot(
+    imageSection: @Composable () -> Unit,
+    detailsSection: @Composable () -> Unit,
+    offeredProductSection: (@Composable () -> Unit)? = null,
+    reviewSection: (@Composable () -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -81,20 +110,12 @@ private fun ProductDetails(
         when (windowWidth) {
             WindowWidthSizeClass.Compact -> {
                 Column {
-                    _ProductImage(
-                        modifier = Modifier.sizeIn(maxWidth = 100.dp),
-                        urls = product.imagesLink
-                    )
-                    _ProductDetailsSection(
-                        name = product.name,
-                        price = product.price,
-                        discountByPrice = product.discountByPrice,
-                        description = product.description,
-                        onAddToCart = onAddToCart
-                    )
-                    HorizontalDivider()
-                    product.offeredProduct?.let { _OfferedProductSection(it) }
-
+                    Box(modifier = Modifier.sizeIn(maxWidth = 100.dp)) { imageSection() }
+                    detailsSection()
+                    if (offeredProductSection != null) {
+                        HorizontalDivider()
+                        offeredProductSection()
+                    }
 
                 }
             }
@@ -102,31 +123,34 @@ private fun ProductDetails(
             else -> {
                 Row {
                     //Since product so should use hd quality image so that user can ....
-                    _ProductImage(
+                    Box(
                         modifier = Modifier.weight(weight).sizeIn(
                             maxHeight = 250.dp,
                             maxWidth = 250.dp
-                        ),
-                        urls = product.imagesLink
-                    )
-                    Column(Modifier.weight(1f - weight)) {
-                        _ProductDetailsSection(
-                            modifier = Modifier,
-                            name = product.name,
-                            price = product.price,
-                            discountByPrice = product.discountByPrice,
-                            description = product.description,
-                            onAddToCart = onAddToCart
                         )
-                        HorizontalDivider()
-                        product.offeredProduct?.let { _OfferedProductSection(it) }
+                    ) { imageSection() }
+
+                    Box(Modifier.weight(1f - weight)) {
+                        detailsSection()
+                    }
+
+                }
+                if (offeredProductSection != null) {
+                    HorizontalDivider()
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                        offeredProductSection()
                     }
 
                 }
             }
         }
 
-
+        //place the review at later section,regardless of screen size
+        if (reviewSection != null) {
+            HorizontalDivider()
+            Text("Reviews")
+            reviewSection()
+        }
     }
 }
 
@@ -139,6 +163,8 @@ private fun _OfferedProductSection(product: ProductOffer) {
             modifier = Modifier.sizeIn(maxWidth = 80.dp),
             urls = listOf(product.imageLink)
         )
+
+        _CountdownTimer(product.expirationTimeInMs)
 
 
     }
@@ -174,7 +200,7 @@ data class ProductOffer(
     val imageLink: String,
     val requiredQuantity: String,
     val freeQuantity: String,
-    val expirationTimeInMs:Long,
+    val expirationTimeInMs: Long,
 )
 
 
@@ -206,8 +232,9 @@ private fun _ProductDetailsSection(
             _ProductPrice(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp),
                 label = "Price onDiscount",
-                price = "${price-it.amount} Tk"
+                price = "${price - it.amount} Tk"
             )
+
         }
 
 
@@ -337,7 +364,7 @@ fun ReviewItem(review: Review) {
 }
 
 @Composable
-fun ReviewSection(reviews: List<Review>) {
+fun _ReviewSection(reviews: List<Review>) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -349,8 +376,8 @@ fun ReviewSection(reviews: List<Review>) {
 
 
 @Composable
-fun ReviewSectionPreview(reviews: List<ProductReview>) {
-    ReviewSection(reviews.map {
+fun _ReviewSectionPreview(reviews: List<ProductReview>) {
+    _ReviewSection(reviews.map {
         Review(
             it.reviewerName, it.comment, it.imagesLink
         )
@@ -421,3 +448,37 @@ private fun _ProductPrice(
 /**
  * TODO: Re-usable component
  */
+
+@Composable
+private fun _CountdownTimer(targetTimeInMs: Long) {
+    var remainingTime by remember { mutableStateOf(targetTimeInMs - System.currentTimeMillis()) }
+
+    LaunchedEffect(Unit) {
+        while (remainingTime > 0) {
+            delay(1000L)
+            remainingTime = targetTimeInMs - System.currentTimeMillis()
+        }
+    }
+
+    val totalSeconds = remainingTime / 1000
+    val seconds = totalSeconds % 60
+    val minutes = (totalSeconds / 60) % 60
+    val hours = (totalSeconds / 3600) % 24
+    val days = totalSeconds / (3600 * 24)
+
+    // Example display format: "D:HH:MM:SS"
+
+    Text(
+        text = "Remaining $days days : ${
+            String.format(
+                "%02d",
+                hours
+            )
+        } hours : ${String.format("%02d", minutes)} minutes : ${
+            String.format(
+                "%02d",
+                seconds
+            )
+        } seconds"
+    )
+}
