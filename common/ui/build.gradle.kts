@@ -38,10 +38,6 @@ kotlin {
                 implementation(libs.coil3)
                 implementation(libs.coil3.core)
                 implementation(libs.ktor.serialization.kotlinx.json)
-                implementation(project(":core:database"))
-                implementation(project(":common:ui"))
-                implementation(project(":core:network"))
-                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha03")
             }
         }
         val androidMain by getting{
@@ -61,7 +57,7 @@ kotlin {
 
 }
 android {
-    namespace = "product_catalog"
+    namespace = "common.ui"
     compileSdk = 34
     defaultConfig {
         minSdk = 27

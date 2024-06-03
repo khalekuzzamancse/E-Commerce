@@ -293,19 +293,19 @@ class CartController(
                 }
             ).getOrNull()
             if (response != null) {
-                _totalPrice.update { response.totalPrice - response.discount }
-                _discount.update { response.discount }
-                if (discount.value <= 0)
-                    updateErrorMessage("You have No discount")
-                else
-                    updateErrorMessage("You have got discount:${_discount.value}")
-                delay(2000)
-                _showConfirmationDialog.update { true }
-                if (response.coupon != null)
-                    updateErrorMessage(
-                        "Congratulations,You have new Coupon:${response.coupon},Use it next time.",
-                        5000
-                    )
+//                _totalPrice.update { response.totalPrice - response.discount }
+//                _discount.update { response.discount }
+//                if (discount.value <= 0)
+//                    updateErrorMessage("You have No discount")
+//                else
+//                    updateErrorMessage("You have got discount:${_discount.value}")
+//                delay(2000)
+//                _showConfirmationDialog.update { true }
+//                if (response.coupon != null)
+//                    updateErrorMessage(
+//                        "Congratulations,You have new Coupon:${response.coupon},Use it next time.",
+//                        5000
+//                    )
 
             }
             delay(7_000)//after 3 sec hide dialogue,to avoid multiple click

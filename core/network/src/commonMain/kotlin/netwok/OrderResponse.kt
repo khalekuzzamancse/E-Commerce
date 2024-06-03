@@ -1,14 +1,22 @@
 package netwok
 
 import kotlinx.serialization.Serializable
-
+@Serializable
+data class OrderBillResponse(
+    val bills: List<OrderResponse>?,
+    val total: Int
+)
 @Serializable
 data class OrderResponse(
-    val totalPrice: Int,
-    val coupon: String?,
+    val productId: String,
+    val productName: String,
+    val unitPrice: Int,
+    val quantity: Int,
     val discount: Int,
-    val requestId: String
+    val originalPrice: Int,
+    val discountedPrice: Int
 )
+
 @Serializable
 data class OrderedItem(
     val productId: String,

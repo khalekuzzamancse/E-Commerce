@@ -52,6 +52,9 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
+import common.ui.CustomSnackBar
+import common.ui.SnackBarMessage
+import common.ui.SnackBarMessageType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -120,8 +123,10 @@ internal fun ProductReturnRoute(
                 ) {
                     val errorMessage = controller.errorMessage.collectAsState().value
                     if (errorMessage != null) {
-                        Snackbar {
-                            Text(errorMessage)
+                        CustomSnackBar(
+                            SnackBarMessage(message = "Something went wrong", type = SnackBarMessageType.Error,errorMessage)
+                        ){
+                            controller.clearErrorMessage()
                         }
                     }
 
@@ -203,6 +208,9 @@ class ReturnProductController(
     val returnAmount = _returnAmount.asStateFlow()
 
     private var returningItem: PurchasedProduct? = null
+    fun clearErrorMessage(){
+        updateErrorMessage(null)
+    }
 
 
     private val _errorMessage = MutableStateFlow<String?>(null)

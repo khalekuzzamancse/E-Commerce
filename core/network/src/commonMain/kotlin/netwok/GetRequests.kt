@@ -4,10 +4,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
-import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.kotlinx.json.json
-
-
+import kotlinx.serialization.Serializable
 
 
 /**
@@ -20,10 +19,21 @@ we are trying to hide it from IDE suggestion by it:
  * * @PublishedApi internal is the intended way of exposing non-public API for use in public inline functions.
  * * Try out for better solution if any...
  */
+@Serializable
+data class ErrorMessage(
+    val message: String,
+    val cause: String,
+    val source: String,
+)
+@Serializable
+data class ResponseDecorator<T>(
+    val response: T,
+    val message: ErrorMessage?,
+    val success: Boolean
+)
 
 
-
- class GetRequests{
+class GetRequests {
     val httpClient = HttpClient {
         install(ContentNegotiation) {
             json()
@@ -31,33 +41,33 @@ we are trying to hide it from IDE suggestion by it:
     }
 
     suspend inline fun <reified T> request(url: String): Result<T> {
+        return requestResponseDecorator(url)
+    }
 
+    suspend inline fun <reified T> requestResponseDecorator(url: String): Result<T> {
         return try {
-            val response: T = httpClient.get(url).body<T>()
-//            println(response)
-            Result.success(response)
+           val res = httpClient.get(url)
+            println("${this.javaClass.simpleName}:${res.bodyAsText()}")
+            val response: ResponseDecorator<T> = httpClient.get(url).body<ResponseDecorator<T>>()
+
+            if (response.success) {
+
+                Result.success(response.response)
+            } else {
+                val message = response.message
+                val details =
+                    "message${message?.message}\ncause:${message?.cause}\nSource:${message?.source}"
+                Result.failure(Throwable(details))
+            }
         } catch (ex: Exception) {
+            println("${this.javaClass.simpleName}:$ex")
             Result.failure(Throwable(ex))
         } finally {
             closeConnection()
         }
     }
 
-    suspend inline fun <reified T> request(url: String, header: Header): Result<T> {
-        val httpClient = HttpClient {
-            install(ContentNegotiation) {
-                json()
-            }
-        }
-        return try {
-            val response = httpClient.get(url){
-                header(key=header.key, value=header.value)
-            }.body<T>()
-            Result.success(response)
-        } catch (ex: Exception) {
-            Result.failure(Throwable("Failed e:${ex.message}"))
-        }
-    }
+
     @PublishedApi
     internal fun closeConnection() {
         try {
@@ -67,13 +77,4 @@ we are trying to hide it from IDE suggestion by it:
     }
 
 
-}
-
-data class Header(val key: String, val value: String)
-/**
- * @param key is the key or file type that used  in the back-end while defining the end-point/api/rest controller
- * @param contentType used to the Client to make the request body/header
- */
-enum class NetworkFileType(val contentType: String, val key: String) {
-    VIDEO(contentType = "video/mp4", key = "video"), IMAGE(contentType = "image/jpeg", key = "image");
 }

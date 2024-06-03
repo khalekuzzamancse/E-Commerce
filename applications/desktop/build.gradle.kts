@@ -15,6 +15,7 @@ kotlin {
                 implementation(compose.desktop.common)
                 implementation(compose.desktop.currentOs)
                 implementation(project(":feature:auth"))
+                implementation(project(":common:ui"))
                 implementation(project(":feature:navigation"))
                 implementation(project(":feature:product_catalog"))
             }

@@ -7,21 +7,13 @@ class APIFacade {
     private val baseUrl = "http://localhost:8080"
     private val userId = "admin"
     suspend fun fetchProducts(): Result<List<ProductEntity>>{
-       val res= GetRequests().request<List<ProductEntity>>("$baseUrl/api/product")
-      //  println(res)
+       val res= GetRequests().request<List<ProductEntity>>("$baseUrl/api/product/all")
         return res
     }
 
-    suspend fun fetchProduct(id: String): Result<ProductEntity> {
-      //  val res = GetRequests().request<ProductEntity>("$baseUrl/api/product/$id")
-        val res = GetRequests().request<ProductEntity>("$baseUrl/api/product/$id")
-     //   println(res)
-        return res
-    }
+
     suspend fun fetchProductDetails(id: String): Result<ProductDetailsEntity> {
-        //  val res = GetRequests().request<ProductEntity>("$baseUrl/api/product/$id")
         val res = GetRequests().request<ProductDetailsEntity>("$baseUrl/api/product/details/$id")
-        //   println(res)
         return res
     }
     suspend fun fetchProductOffer(id: String): Result<ProductOfferEntity> {
@@ -71,14 +63,14 @@ class APIFacade {
         )
     }
 
-    suspend fun orderRequest(items: List<OrderedItem>, coupon: String?=null): Result<OrderResponse> {
-        return post<OrderResponse>(
+    suspend fun orderRequest(items: List<OrderedItem>, coupon: String?=null): Result<OrderBillResponse> {
+        return post<OrderBillResponse>(
             url = "$baseUrl/api/purchase/request",
             body = OrderRequest(userId = userId, coupon = coupon, items = items)
         )
     }
-    suspend fun orderConfirm(items: List<OrderedItem>, coupon: String?=null): Result<List<PurchasedResponse>> {
-        return post<List<PurchasedResponse>>(
+    suspend fun orderConfirm(items: List<OrderedItem>, coupon: String?=null): Result<List<String>> {
+        return post<List<String>>(
             url = "$baseUrl/api/purchase/confirm",
             body = OrderRequest(userId = userId, coupon = coupon, items = items)
         )

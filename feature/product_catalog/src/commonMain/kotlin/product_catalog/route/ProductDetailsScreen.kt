@@ -3,8 +3,6 @@ package product_catalog.route
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,6 +11,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import common.ui.CustomSnackBar
+import common.ui.SnackBarMessage
+import common.ui.SnackBarMessageType
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import netwok.APIFacade
 import netwok.OrderedItem
@@ -27,17 +29,28 @@ fun ProductDetailsScreen(
     id: String,
 ) {
     val scope = rememberCoroutineScope()
-    val snackBarHostState = remember { SnackbarHostState() }
     var selectedProduct by remember { mutableStateOf<ProductDetails?>(null) }
+    var snackBarMessage by remember { mutableStateOf<SnackBarMessage?>(null) }
+
     LaunchedEffect(Unit) {
         APIFacade().fetchProductDetails(id).getOrNull()?.let {
             selectedProduct = convertEntityToModel(it)
         }
 
     }
+    LaunchedEffect(snackBarMessage){
+        if (snackBarMessage!=null){
+            delay(3000)
+            snackBarMessage=null
+        }
+    }
     Scaffold(
         snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
+            snackBarMessage?.let {
+                CustomSnackBar(it){
+                    snackBarMessage=null
+                }
+            }
         },
     ) {
         Box(Modifier.padding(it)) {
@@ -48,36 +61,54 @@ fun ProductDetailsScreen(
                     //TODO: onAddToCart is now used for order
                     onAddToCart = { quantity ->
                         scope.launch {
-                            val products = listOf(OrderedItem(item.id.toString(), quantity))
+                            val products = listOf(OrderedItem(item.id, quantity))
                             try {
 
                                 //APIFacade().addToCart(item.id, quantity)
                                 val result = APIFacade().orderRequest(products)
                                 // snack barHostState.showSnack bar("Added to cart")
                                 if (result.isSuccess) {
-                                    snackBarHostState.showSnackbar("Need to pay:${result.getOrThrow().totalPrice}")
+                                    snackBarMessage = SnackBarMessage(
+                                        message = "Purchased successfully",
+                                        type = SnackBarMessageType.Success,
+                                        details ="Need to pay:${result.getOrThrow().total}"
+                                    )
                                     println("ProductListDetailsRoute:$result")
                                     val res = APIFacade().orderConfirm(products)
                                     if (res.isSuccess) {
                                         res.getOrNull()?.let { response ->
-                                            if (response.isNotEmpty()) {
-                                                snackBarHostState.showSnackbar("Purchased successfully")
-                                                println("ProductListDetailsRoute:$res")
+                                            snackBarMessage = if (response.isNotEmpty()) {
+                                                SnackBarMessage(
+                                                    message = "Purchased successfully",
+                                                    type = SnackBarMessageType.Success,
+                                                    details = result.exceptionOrNull()?.message
+                                                )
+
                                             } else {
-                                                snackBarHostState.showSnackbar("Failed to purchase")
+                                                SnackBarMessage(
+                                                    message = "Failed to purchase",
+                                                    type = SnackBarMessageType.Error,
+                                                    details = result.exceptionOrNull()?.message
+                                                )
                                             }
 
                                         }
 
                                     } else if (res.isFailure) {
-                                        println("ProductListDetailsRoute:$res")
-                                        snackBarHostState.showSnackbar("Failed to purchase")
+                                        snackBarMessage = SnackBarMessage(
+                                            message = "Failed to purchase",
+                                            type = SnackBarMessageType.Error,
+                                            details = result.exceptionOrNull()?.message
+                                        )
                                     }
 
 
                                 } else if (result.isFailure) {
-                                    snackBarHostState.showSnackbar("Failed to order")
-                                    println("ProductListDetailsRoute:$result")
+                                    snackBarMessage = SnackBarMessage(
+                                        message = "Failed to order",
+                                        type = SnackBarMessageType.Error,
+                                        details = result.exceptionOrNull()?.message
+                                    )
                                 }
                             } catch (_: Exception) {
                             }
